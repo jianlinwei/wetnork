@@ -2,3 +2,4 @@
 *.d
 *.swp
 wetnork
+.depend-check
