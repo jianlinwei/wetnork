@@ -1,6 +1,7 @@
 TARGET = wetnork
 
-OBJ = wetnork.o
+OBJ = wetnork.o \
+	  tun.o
 
 LIBRARIES = libconfig \
 			gnutls
@@ -27,3 +28,5 @@ clean:
 
 %.d: %.c
 	./depend.sh `dirname $*` "$(CC)" $(CFLAGS) $*.c > $@
+
+.PHONY: clean
