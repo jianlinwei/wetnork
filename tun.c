@@ -38,11 +38,14 @@ struct tun_device* tun_open(const char *name_template)
 
 	tun_name = strndup(ifr.ifr_name, IFNAMSIZ);
 	if (tun_name == NULL) {
+		close(fd);
 		return NULL;
 	}
 
 	result = (struct tun_device*) malloc(sizeof(struct tun_device));
 	if (result == NULL) {
+		close(fd);
+		free(tun_name);
 		return NULL;
 	}
 
