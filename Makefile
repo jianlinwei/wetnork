@@ -6,7 +6,7 @@ OBJ = wetnork.o \
 LIBRARIES = libconfig \
 			gnutls
 
-CFLAGS += -O2 -std=c99 -Wall -Wstrict-prototypes -pedantic `pkg-config --cflags $(LIBRARIES)`
+CFLAGS += -O2 -std=gnu99 -Wall -Wstrict-prototypes -pedantic `pkg-config --cflags $(LIBRARIES)`
 LDFLAGS += `pkg-config --libs $(LIBRARIES)`
 
 all: $(TARGET)

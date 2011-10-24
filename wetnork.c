@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "tun.h"
-#include "string.h"
+#include <string.h>
 #include <sys/socket.h>
 #include <linux/if.h>
 #include <unistd.h>
@@ -9,13 +9,15 @@
 
 int main(int argc, char **argv)
 {
-	char name[IFNAMSIZ];
+	struct tun_device *tun1, *tun2;
 
-	int fd1 = open_tun_device("tun-p-%d", name);
-	perror(name);
+	tun1 = tun_open("tun-p-%d");
+	int fd1 = tun1->fd;
+	perror(tun1->name);
 
-	int fd2 = open_tun_device("tun-p-%d", name);
-	perror(name);
+	tun2 = tun_open("tun-p-%d");
+	int fd2 = tun2->fd;
+	perror(tun2->name);
 
 	for (;;) {
 		char buf[0x10000];
@@ -24,6 +26,9 @@ int main(int argc, char **argv)
 		len = write(fd2, buf, len);
 		printf("to: %s (%i)\n", strerror(errno), len);
 	}
+
+	tun_close(tun1);
+	tun_close(tun2);
 
 	return 0;
 }
