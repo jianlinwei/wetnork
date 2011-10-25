@@ -54,6 +54,16 @@ struct tun_device* tun_open(const char *name_template)
 	return result;
 }
 
+ssize_t tun_read(struct tun_device* tun, char* buffer, size_t len)
+{
+	return read(tun->fd, buffer, len);
+}
+
+ssize_t tun_write(struct tun_device* tun, const char* buffer, size_t len)
+{
+	return write(tun->fd, buffer, len);
+}
+
 void tun_close(struct tun_device *tun)
 {
 	close(tun->fd);
