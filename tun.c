@@ -64,8 +64,36 @@ ssize_t tun_write(struct tun_device* tun, const char* buffer, size_t len)
 	return write(tun->fd, buffer, len);
 }
 
+static void tun_io_cb(ev_loop* loop, ev_io* io, int revents)
+{
+	struct tun_device* tun = (struct tun_device*) io->data;
+
+	tun->io_cb(tun);
+}
+
+void tun_watcher_set(struct tun_device* tun, ev_loop* loop, void (*cb)(struct tun_device* tun))
+{
+	ev_io_init(&tun->io_watcher, tun_io_cb, tun->fd, EV_READ);
+	tun->io_watcher.data = tun;
+	tun->loop = loop;
+	tun->io_cb = cb;
+}
+
+void tun_watcher_start(struct tun_device* tun)
+{
+	ev_io_start(tun->loop, &tun->io_watcher);
+}
+
+void tun_watcher_stop(struct tun_device* tun)
+{
+	ev_io_stop(tun->loop, &tun->io_watcher);
+}
+
 void tun_close(struct tun_device *tun)
 {
+	if (tun->watcher_running) {
+		tun_watcher_stop(tun);
+	}
 	close(tun->fd);
 	free(tun->name);
 	free(tun);
