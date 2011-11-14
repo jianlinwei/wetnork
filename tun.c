@@ -11,7 +11,7 @@
 #include <unistd.h>
 #include <string.h>
 
-struct tun_device* tun_open(const char *name_template)
+struct tun_device *tun_open(const char *name_template)
 {
 	struct ifreq ifr;
 	int fd, err;
@@ -54,24 +54,24 @@ struct tun_device* tun_open(const char *name_template)
 	return result;
 }
 
-ssize_t tun_read(struct tun_device* tun, char* buffer, size_t len)
+ssize_t tun_read(struct tun_device *tun, char *buffer, size_t len)
 {
 	return read(tun->fd, buffer, len);
 }
 
-ssize_t tun_write(struct tun_device* tun, const char* buffer, size_t len)
+ssize_t tun_write(struct tun_device *tun, const char *buffer, size_t len)
 {
 	return write(tun->fd, buffer, len);
 }
 
-static void tun_io_cb(ev_loop* loop, ev_io* io, int revents)
+static void tun_io_cb(ev_loop *loop, ev_io *io, int revents)
 {
 	struct tun_device* tun = (struct tun_device*) io->data;
 
 	tun->io_cb(tun);
 }
 
-void tun_watcher_set(struct tun_device* tun, ev_loop* loop, void (*cb)(struct tun_device* tun))
+void tun_watcher_set(struct tun_device *tun, ev_loop *loop, void (*cb)(struct tun_device *tun))
 {
 	ev_io_init(&tun->io_watcher, tun_io_cb, tun->fd, EV_READ);
 	tun->io_watcher.data = tun;
@@ -79,12 +79,12 @@ void tun_watcher_set(struct tun_device* tun, ev_loop* loop, void (*cb)(struct tu
 	tun->io_cb = cb;
 }
 
-void tun_watcher_start(struct tun_device* tun)
+void tun_watcher_start(struct tun_device *tun)
 {
 	ev_io_start(tun->loop, &tun->io_watcher);
 }
 
-void tun_watcher_stop(struct tun_device* tun)
+void tun_watcher_stop(struct tun_device *tun)
 {
 	ev_io_stop(tun->loop, &tun->io_watcher);
 }

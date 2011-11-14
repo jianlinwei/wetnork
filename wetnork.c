@@ -10,7 +10,7 @@
 
 struct tun_device *tun1, *tun2;
 
-void io_cb(struct tun_device* tun)
+void io_cb(struct tun_device *tun)
 {
 	char buf[0x10000];
 	int len = tun_read(tun1, buf, sizeof(buf));
