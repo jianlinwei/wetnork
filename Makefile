@@ -1,16 +1,17 @@
 TARGET = wetnork
 
 OBJ = wetnork.o \
+	  network.o \
 	  tun.o
 
 LIBRARIES = libconfig \
 			gnutls
 
-LIBRARIES_WITHOUT_PKGCONFIG = -lev
+LIBRARIES_WITHOUT_PKGCONFIG = -lev -lboost_signals
 
 DEFINES = -DEV_COMPAT3=0
 
-CFLAGS += -O2 -std=gnu99 -Wall -Wstrict-prototypes -pedantic $(DEFINES) `pkg-config --cflags $(LIBRARIES)`
+CXXFLAGS += -O2 -ansi -Wall -pedantic $(DEFINES) `pkg-config --cflags $(LIBRARIES)`
 LDFLAGS += `pkg-config --libs $(LIBRARIES)` $(LIBRARIES_WITHOUT_PKGCONFIG)
 
 all: $(TARGET)
@@ -25,12 +26,12 @@ all: $(TARGET)
 -include $(OBJ:.o=.d)
 
 $(TARGET): $(OBJ)
-	$(CC) $(LDFLAGS) -o $@ $^
+	$(CXX) $(LDFLAGS) -o $@ $^
 
 clean:
 	-rm $(OBJ) $(OBJ:.o=.d) $(TARGET) .depend-check
 
-%.d: %.c
-	./depend.sh `dirname $*` "$(CC)" $(CFLAGS) $*.c > $@
+%.d: %.cpp
+	./depend.sh `dirname $*` "$(CXX)" $(CXXFLAGS) $*.cpp > $@
 
 .PHONY: clean

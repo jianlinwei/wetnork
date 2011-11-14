@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include "tun.h"
 #include <string.h>
 #include <sys/socket.h>
 #include <linux/if.h>
@@ -8,37 +7,38 @@
 #include <errno.h>
 #include <ev.h>
 
-struct tun_device *tun1, *tun2;
+#include "tun.hpp"
 
-void io_cb(struct tun_device *tun)
+class TunDevice *tun1, *tun2;
+
+void io_cb()
 {
 	char buf[0x10000];
-	int len = tun_read(tun1, buf, sizeof(buf));
+	int len = tun1->read(buf, sizeof(buf));
 	printf("from: %s (%i)\n", strerror(errno), len);
-	len = tun_write(tun2, buf, len);
+	len = tun2->write(buf, len);
 	printf("to: %s (%i)\n", strerror(errno), len);
 }
 
 int main(int argc, char **argv)
 {
-	tun1 = tun_open("tun-p-%d");
-	perror(tun1->name);
-
-	tun2 = tun_open("tun-p-%d");
-	perror(tun2->name);
-
 	if (!ev_default_loop(0)) {
 		printf("No default loop!\n");
 		return 1;
 	}
 
-	tun_watcher_set(tun1, ev_default_loop(0), io_cb);
-	tun_watcher_start(tun1);
+	tun1 = TunDevice::create("tun-p-%d", ev_default_loop(0));
+	perror(tun1->name().c_str());
+
+	tun2 = TunDevice::create("tun-p-%d", ev_default_loop(0));
+	perror(tun2->name().c_str());
+
+	tun1->connect(io_cb);
 
 	ev_run(ev_default_loop(0), 0);
 
-	tun_close(tun1);
-	tun_close(tun2);
+	delete tun1;
+	delete tun2;
 
 	return 0;
 }
