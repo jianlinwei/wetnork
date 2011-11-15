@@ -28,9 +28,15 @@ struct SocketAddress {
 		}
 
 	public:
-		SocketAddress(sockaddr* addr);
+		SocketAddress(sockaddr* addr);						
 
 		static SocketAddress parse(std::string addr, in_port_t port);
+
+		int family() const { return addr.in.sin_family; }
+
+		const sockaddr* native() const { return reinterpret_cast<const sockaddr*>(&addr); }
+
+		socklen_t native_len() const { return len; }
 
 		bool operator<(const SocketAddress& other) const
 		{
@@ -84,35 +90,15 @@ class Socket {
 		}
 
 	public:
-		virtual ~Socket() = 0;
-
 		virtual boost::signals::connection listen(OnAccept::slot_function_type cb) = 0;
 };
 
 
 
 
+class UdpChannel;
 class UdpLink;
-
-class UdpSocket : public Socket {
-	private:
-		int fd;
-		ev::io watcher;
-		std::map<SocketAddress, UdpLink*> peers;
-
-		void onPacketArrived(ev::io& io, int revents);
-
-		UdpSocket(int fd, ev_loop* loop)
-			: fd(fd), watcher(loop)
-		{
-			watcher.set<UdpSocket, &UdpSocket::onPacketArrived>(this);
-		}
-
-	public:
-		static UdpSocket* create(struct sockaddr* addr, socklen_t len);
-
-		boost::signals::connection listen(OnAccept::slot_function_type cb);
-};
+class UdpSocket;
 
 class UdpChannel : public Channel {
 	private:
@@ -120,8 +106,6 @@ class UdpChannel : public Channel {
 		OnCanSend onCanSend;
 
 	public:
-		static UdpChannel* connect(struct sockaddr* addr, socklen_t len);
-
 		ssize_t receive(char* buffer, size_t len);
 		ssize_t send(const char* buffer, size_t len);
 
@@ -134,11 +118,39 @@ class UdpLink : public Link {
 		OnClosed onClosed;
 
 	public:
-		Channel* getChannel(int8_t id, bool reliable);
+		static UdpLink* connect(SocketAddress addr);
 
-		void connectClosed(OnClosed::slot_function_type cb);
+		Channel* getChannel(int8_t id, bool reliable) = 0;
 
-		void close();
+		void connectClosed(OnClosed::slot_function_type cb) = 0;
+
+		void close() = 0;
+};
+
+class UdpSocket : public Socket {
+	private:
+		typedef std::map<SocketAddress, UdpLink*> peers_map;
+
+		int fd;
+		ev::io watcher;
+		peers_map peers;
+		OnAccept onAccept;
+
+		void onPacketArrived(ev::io& io, int revents);
+
+		UdpSocket(int fd, ev_loop* loop)
+			: fd(fd), watcher(loop)
+		{
+			watcher.set<UdpSocket, &UdpSocket::onPacketArrived>(this);
+			watcher.start(fd, ev::READ);
+		}
+
+	public:
+		~UdpSocket();
+
+		static UdpSocket* create(SocketAddress addr, ev_loop* loop);
+
+		boost::signals::connection listen(OnAccept::slot_function_type cb);
 };
 
 #endif
