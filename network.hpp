@@ -6,7 +6,6 @@
 #include <netinet/in.h>
 #include <boost/signal.hpp>
 #include <map>
-#include <queue>
 #include <stdint.h>
 #include <string>
 #include <arpa/inet.h>
@@ -60,21 +59,17 @@ struct SocketAddress {
 class Packet {
 	private:
 		boost::shared_array<const uint8_t> _data;
-		const off_t _offset;
-		const size_t _length;
+		off_t _offset;
+		size_t _length;
 
 	public:
 		Packet(const uint8_t* data, off_t offset, size_t length)
 			: _data(data), _offset(offset), _length(length)
 		{}
 
-		~Packet()
-		{
-		}
-
 		const uint8_t* data() const { return _data.get() + _offset; }
 
-		size_t length() const { return _length - _offset; }
+		size_t length() const { return _length; }
 };
 
 class Channel {

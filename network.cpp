@@ -66,10 +66,24 @@ class UnreliableUdpChannel : public UdpChannel {
 		void propagate(Packet packet);
 };
 
+struct UnreliableUdpPacketHeader {
+	private:
+		uint8_t _cid;
+
+	public:
+		UnreliableUdpPacketHeader(uint8_t cid)
+			: _cid(cid)
+		{}
+
+		uint8_t cid() const { return _cid; }
+};
+
 ssize_t UnreliableUdpChannel::send(const uint8_t* buffer, size_t len)
 {
+	UnreliableUdpPacketHeader header(cid);
+
 	iovec iov[] = {
-		{ &cid, sizeof(cid) },
+		{ &header, sizeof(header) },
 		{ const_cast<uint8_t*>(buffer), len }
 	};
 
@@ -84,7 +98,8 @@ ssize_t UnreliableUdpChannel::send(const uint8_t* buffer, size_t len)
 
 void UnreliableUdpChannel::propagate(Packet packet)
 {
-	onReceive(Packet(packet.data(), 1, packet.length() - 1));
+	onReceive(Packet(packet.data(), sizeof(UnreliableUdpPacketHeader),
+				packet.length() - sizeof(UnreliableUdpPacketHeader)));
 }
 
 
@@ -93,30 +108,114 @@ void UnreliableUdpChannel::propagate(Packet packet)
 class ReliableUdpChannel : public UdpChannel {
 	private:
 		ev::timer timeout;
-		std::queue<Packet> queue;
-		uint32_t currentSeqNum;
+		Packet* inFlightPacket;
+		uint32_t localSeq, peerSeq;
 
 		void onTimeout(ev::timer& timer, int revents);
 
+		void transmitQueue();
+		void transmitPacket(Packet packet);
+
 	public:
 		ReliableUdpChannel(UdpLink& parent, uint8_t cid, ev::loop_ref& loop)
-			: UdpChannel(parent, cid), timeout(loop)
+			: UdpChannel(parent, cid), timeout(loop), inFlightPacket(NULL),
+				localSeq(0), peerSeq(0)
 		{}
 
 		ssize_t send(const uint8_t* buffer, size_t len);
 		void propagate(Packet packet);
 };
 
+struct ReliableUdpPacketHeader {
+	private:
+		uint8_t _cid;
+		uint8_t _flags;
+		uint32_t _seq;
+
+	public:
+		static const uint8_t ACK = 0x01;
+
+		ReliableUdpPacketHeader(uint8_t cid, uint8_t flags, uint32_t seq)
+			: _cid(cid), _flags(htonl(flags)), _seq(seq)
+		{}
+
+		uint8_t cid() const { return _cid; }
+		uint8_t flags() const { return _flags; }
+		uint32_t seq() const { return ntohl(_seq); }
+};
+
 void ReliableUdpChannel::onTimeout(ev::timer& timer, int revents)
 {
+	transmitQueue();
+}
+
+void ReliableUdpChannel::transmitQueue()
+{
+	if (inFlightPacket) {
+		transmitPacket(*inFlightPacket);
+	}
+}
+
+void ReliableUdpChannel::transmitPacket(Packet packet)
+{
+	ReliableUdpPacketHeader header(cid, 0, localSeq);
+
+	iovec iov[] = {
+		{ &header, sizeof(header) },
+		{ const_cast<uint8_t*>(packet.data()), packet.length() }
+	};
+
+	msghdr msg;
+	memset(&msg, 0, sizeof(msg));
+	msg.msg_iov = iov;
+	msg.msg_iovlen = 2;
+
+	parent.send(&msg, 0);
 }
 
 ssize_t ReliableUdpChannel::send(const uint8_t* buffer, size_t len)
 {
+	if (inFlightPacket) {
+		return 0;
+	}
+
+	uint8_t* pbuffer = new uint8_t[len];
+	memcpy(pbuffer, buffer, len);
+	inFlightPacket = new Packet(pbuffer, 0, len);
+	return 1;
 }
 
 void ReliableUdpChannel::propagate(Packet packet)
 {
+	const ReliableUdpPacketHeader* header =
+		reinterpret_cast<const ReliableUdpPacketHeader*>(packet.data());
+
+	if (header->flags() & ReliableUdpPacketHeader::ACK
+			&& localSeq == header->seq()) {
+		localSeq++;
+		delete inFlightPacket;
+		inFlightPacket = NULL;
+	} else if (header->flags() == 0) {
+		ReliableUdpPacketHeader ackHeader(cid, ReliableUdpPacketHeader::ACK, header->seq());
+
+		if (peerSeq < header->seq()) {
+			onReceive(Packet(packet.data(), sizeof(ackHeader),
+						packet.length() - sizeof(ackHeader)));
+		}
+
+		peerSeq = peerSeq < header->seq() ? header->seq() : peerSeq;
+
+		iovec iov[] = {
+			{ &ackHeader, sizeof(ackHeader) }
+		};
+
+		msghdr msg;
+		memset(&msg, 0, sizeof(msg));
+		msg.msg_iov = iov;
+		msg.msg_iovlen = 1;
+
+		parent.send(&msg, 0);
+	}
 }
 
 
