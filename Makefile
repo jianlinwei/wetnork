@@ -2,6 +2,7 @@ TARGET = wetnork
 
 OBJ = wetnork.o \
 	  network.o \
+	  SocketAddress.o \
 	  tun.o
 
 LIBRARIES = libconfig \
