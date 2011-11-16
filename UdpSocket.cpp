@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <errno.h>
 
 #include "network.hpp"
 #include "network-udp-internal.hpp"
@@ -57,7 +58,7 @@ UdpSocket* UdpSocket::create(SocketAddress addr, ev::loop_ref& loop)
 	int err = bind(fd, addr.native(), addr.native_len());
 	if (err < 0) {
 		close(fd);
-		throw bad_address();
+		throw bad_address(strerror(errno));
 	}
 
 	return new UdpSocket(fd, loop);

@@ -11,8 +11,31 @@
 #include <arpa/inet.h>
 #include <boost/shared_array.hpp>
 
-class bad_address {};
-class bad_packet {};
+class network_exception {
+	private:
+		const char* _what;
+
+	public:
+		network_exception(const char* what)
+			: _what(what)
+		{}
+
+		const char* what() const { return _what; }
+};
+
+class bad_address : public network_exception {
+	public:
+		bad_address(const char* what)
+			: network_exception(what)
+		{}
+};
+
+class bad_send : public network_exception {
+	public:
+		bad_send(const char* what)
+			: network_exception(what)
+		{}
+};
 
 struct SocketAddress {
 	private:

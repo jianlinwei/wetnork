@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <errno.h>
 
 #include "network.hpp"
 #include "network-udp-internal.hpp"
@@ -35,7 +36,7 @@ ssize_t UnreliableUdpChannel::send(const uint8_t* buffer, size_t len)
 
 	int result = parent.send(&msg, 0);
 	if (result < len + sizeof(header)) {
-		throw bad_packet();
+		throw bad_send(strerror(errno));
 	}
 
 	return true;
