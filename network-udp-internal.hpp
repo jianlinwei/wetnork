@@ -2,6 +2,7 @@
 #define NETWORK_UDP_INTERNAL
 
 #include "network.hpp"
+#include "network-udp.hpp"
 
 class UnreliableUdpChannel : public UdpChannel {
 	public:
