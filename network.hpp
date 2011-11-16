@@ -177,7 +177,7 @@ class UdpLink : public Link {
 				void onPacketArrived(ev::io& io, int revents);
 
 			protected:
-				ConnectedHandler(int fd, UdpLink& parent, ev_loop* loop)
+				ConnectedHandler(int fd, UdpLink& parent, ev::loop_ref& loop)
 					: SocketHandler(fd, parent), watcher(loop)
 				{
 					watcher.set<ConnectedHandler, &ConnectedHandler::onPacketArrived>(this);
@@ -217,7 +217,7 @@ class UdpSocket : public Socket {
 
 		void onPacketArrived(ev::io& io, int revents);
 
-		UdpSocket(int fd, ev_loop* loop)
+		UdpSocket(int fd, ev::loop_ref& loop)
 			: fd(fd), watcher(loop)
 		{
 			watcher.set<UdpSocket, &UdpSocket::onPacketArrived>(this);
@@ -227,7 +227,7 @@ class UdpSocket : public Socket {
 	public:
 		~UdpSocket();
 
-		static UdpSocket* create(SocketAddress addr, ev_loop* loop);
+		static UdpSocket* create(SocketAddress addr, ev::loop_ref& loop);
 
 		boost::signals::connection listen(OnAccept::slot_function_type cb);
 };
