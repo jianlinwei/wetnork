@@ -56,25 +56,41 @@ SocketAddress SocketAddress::parse(std::string addr, in_port_t port)
 
 /* UdpChannel */
 
-ssize_t UdpChannel::send(const char* buffer, size_t len)
+ssize_t UdpChannel::UnreliableChannelHandler::send(const uint8_t* buffer, size_t len)
 {
-	uint8_t cid = (reliable ? 0x80 : 0x00) | id;
+	iovec iov[] = {
+		{ &parent.cid, 1 },
+		{ const_cast<uint8_t*>(buffer), len }
+	};
 
-	if (reliable) {
-		// TODO: reliable channels
-	} else {
-		iovec iov[] = {
-			{ &cid, 1 },
-			{ const_cast<char*>(buffer), len }
-		};
+	msghdr msg;
+	memset(&msg, 0, sizeof(msg));
+	msg.msg_iov = iov;
+	msg.msg_iovlen = 2;
 
-		msghdr msg;
-		memset(&msg, 0, sizeof(msg));
-		msg.msg_iov = iov;
-		msg.msg_iovlen = 2;
+	parent.parent.handler->send(&msg, 0);
+}
 
-		return parent.handler->send(&msg, 0);
-	}
+void UdpChannel::UnreliableChannelHandler::propagate(Packet packet)
+{
+	parent.onReceive(Packet(packet.data(), 1, packet.length() - 1));
+}
+
+void UdpChannel::ReliableChannelHandler::onTimeout(ev::timer& timer, int revents)
+{
+}
+
+ssize_t UdpChannel::ReliableChannelHandler::send(const uint8_t* buffer, size_t len)
+{
+}
+
+void UdpChannel::ReliableChannelHandler::propagate(Packet packet)
+{
+}
+
+ssize_t UdpChannel::send(const uint8_t* buffer, size_t len)
+{
+	return handler->send(buffer, len);
 }
 
 boost::signals::connection UdpChannel::connectReceive(OnReceive::slot_function_type cb)
@@ -119,7 +135,7 @@ ssize_t UdpLink::AcceptedHandler::send(const msghdr* msg, int flags)
 
 void UdpLink::ConnectedHandler::onPacketArrived(ev::io& io, int revents)
 {
-	char pbuf[16];
+	uint8_t pbuf[16];
 
 	int plen = recv(fd, pbuf, sizeof(pbuf), MSG_PEEK | MSG_TRUNC);
 	if (plen < 0) {
@@ -157,7 +173,7 @@ UdpChannel* UdpLink::getChannel(int8_t id, bool reliable)
 
 	uint8_t cid = (reliable ? 0x80 : 0) | id;
 	if (!channels.count(cid)) {
-		channels[cid] = new UdpChannel(*this, id, reliable);
+		channels[cid] = new UdpChannel(*this, id, reliable, loop);
 	}
 	return channels[cid];
 }
@@ -186,7 +202,7 @@ UdpSocket::~UdpSocket()
 void UdpSocket::onPacketArrived(ev::io& io, int revents)
 {
 	sockaddr_storage addr;
-	char pbuf[16];
+	uint8_t pbuf[16];
 	socklen_t addrlen = sizeof(addr);
 
 	int plen = recvfrom(fd, pbuf, sizeof(pbuf), MSG_PEEK | MSG_TRUNC,

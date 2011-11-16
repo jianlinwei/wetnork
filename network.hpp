@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 #include <boost/signal.hpp>
 #include <map>
+#include <queue>
 #include <stdint.h>
 #include <string>
 #include <arpa/inet.h>
@@ -81,7 +82,7 @@ class Channel {
 		typedef boost::signal<void (Packet packet)> OnReceive;
 
 	public:
-		virtual ssize_t send(const char* buffer, size_t len) = 0;
+		virtual ssize_t send(const uint8_t* buffer, size_t len) = 0;
 
 		virtual boost::signals::connection connectReceive(OnReceive::slot_function_type cb) = 0;
 };
@@ -112,6 +113,9 @@ class Socket {
 
 
 
+
+
+
 class UdpChannel;
 class UdpLink;
 class UdpSocket;
@@ -119,10 +123,48 @@ class UdpSocket;
 class UdpChannel : public Channel {
 	friend class UdpLink;
 	private:
+		class ChannelHandler {
+			protected:
+				UdpChannel& parent;
+
+			public:
+				ChannelHandler(UdpChannel& parent)
+					: parent(parent)
+				{}
+
+				virtual ssize_t send(const uint8_t* buffer, size_t len) = 0;
+				virtual void propagate(Packet packet) = 0;
+		};
+		class UnreliableChannelHandler : public ChannelHandler {
+			public:
+				UnreliableChannelHandler(UdpChannel& parent)
+					: ChannelHandler(parent)
+				{}
+
+				ssize_t send(const uint8_t* buffer, size_t len);
+				void propagate(Packet packet);
+		};
+		class ReliableChannelHandler : public ChannelHandler {
+			private:
+				ev::timer timeout;
+				std::queue<Packet> queue;
+				uint32_t currentSeqNum;
+
+				void onTimeout(ev::timer& timer, int revents);
+
+			public:
+				ReliableChannelHandler(UdpChannel& parent, ev::loop_ref& loop)
+					: ChannelHandler(parent), timeout(loop)
+				{}
+
+				ssize_t send(const uint8_t* buffer, size_t len);
+				void propagate(Packet packet);
+		};
+
 		OnReceive onReceive;
 		UdpLink& parent;
-		int8_t id;
-		bool reliable;
+		uint8_t cid;
+		ChannelHandler* handler;
 
 		void propagatePacket(Packet packet)
 		{
@@ -130,12 +172,25 @@ class UdpChannel : public Channel {
 		}
 
 	protected:
-		UdpChannel(UdpLink& parent, int8_t id, bool reliable)
-			: parent(parent), id(id), reliable(reliable)
-		{}
+		UdpChannel(UdpLink& parent, int8_t id, bool reliable, ev::loop_ref& loop)
+			: parent(parent)
+		{
+			if (reliable) {
+				cid = 0x80 | id;
+				handler = new ReliableChannelHandler(*this, loop);
+			} else {
+				cid = id;
+				handler = new UnreliableChannelHandler(*this);
+			}
+		}
 
 	public:
-		ssize_t send(const char* buffer, size_t len);
+		~UdpChannel()
+		{
+			delete handler;
+		}
+
+		ssize_t send(const uint8_t* buffer, size_t len);
 
 		boost::signals::connection connectReceive(OnReceive::slot_function_type cb);
 };
@@ -155,7 +210,6 @@ class UdpLink : public Link {
 
 			public:
 				virtual void onReceive(size_t size);
-
 				virtual ssize_t send(const msghdr* msg, int flags) = 0;
 		};
 		class AcceptedHandler : public SocketHandler {
@@ -193,6 +247,7 @@ class UdpLink : public Link {
 		OnClosed onClosed;
 		SocketHandler* handler;
 		channel_map channels;
+		ev::loop_ref& loop;
 
 	public:
 		~UdpLink();
@@ -214,11 +269,12 @@ class UdpSocket : public Socket {
 		ev::io watcher;
 		peers_map peers;
 		OnAccept onAccept;
+		ev::loop_ref& loop;
 
 		void onPacketArrived(ev::io& io, int revents);
 
 		UdpSocket(int fd, ev::loop_ref& loop)
-			: fd(fd), watcher(loop)
+			: fd(fd), watcher(loop), loop(loop)
 		{
 			watcher.set<UdpSocket, &UdpSocket::onPacketArrived>(this);
 			watcher.start(fd, ev::READ);
