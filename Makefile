@@ -32,6 +32,6 @@ clean:
 	-rm $(OBJ) $(OBJ:.o=.d) $(TARGET) .depend-check
 
 %.d: %.cpp
-	./depend.sh `dirname $*` "$(CXX)" $(CXXFLAGS) $*.cpp > $@
+	./depend.sh `dirname $*` "$(CPP)" $*.cpp > $@
 
 .PHONY: clean
