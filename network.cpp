@@ -78,7 +78,8 @@ ssize_t UnreliableUdpChannel::send(const uint8_t* buffer, size_t len)
 	msg.msg_iov = iov;
 	msg.msg_iovlen = 2;
 
-	parent.send(&msg, 0);
+	int result = parent.send(&msg, 0);
+	return result < 0 ? result : result - iov[0].iov_len;
 }
 
 void UnreliableUdpChannel::propagate(Packet packet)
