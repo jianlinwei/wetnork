@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <string>
 #include <arpa/inet.h>
+#include <boost/shared_array.hpp>
 
 
 
@@ -24,8 +25,7 @@ struct SocketAddress {
 		socklen_t len;
 
 		SocketAddress()
-		{
-		}
+		{}
 
 	public:
 		SocketAddress(sockaddr* addr);						
@@ -56,17 +56,34 @@ struct SocketAddress {
 
 
 
-class Channel {
-	protected:
-		typedef boost::signal<void ()> OnCanReceive;
-		typedef boost::signal<void ()> OnCanSend;
+class Packet {
+	private:
+		boost::shared_array<const uint8_t> _data;
+		const off_t _offset;
+		const size_t _length;
 
 	public:
-		virtual ssize_t receive(char* buffer, size_t len) = 0;
+		Packet(const uint8_t* data, off_t offset, size_t length)
+			: _data(data), _offset(offset), _length(length)
+		{}
+
+		~Packet()
+		{
+		}
+
+		const uint8_t* data() const { return _data.get() + _offset; }
+
+		size_t length() const { return _length; }
+};
+
+class Channel {
+	protected:
+		typedef boost::signal<void (Packet packet)> OnReceive;
+
+	public:
 		virtual ssize_t send(const char* buffer, size_t len) = 0;
 
-		virtual boost::signals::connection connectReceive(OnCanReceive::slot_function_type cb) = 0;
-		virtual boost::signals::connection connectSend(OnCanSend::slot_function_type cb) = 0;
+		virtual boost::signals::connection connectReceive(OnReceive::slot_function_type cb) = 0;
 };
 
 class Link {
@@ -76,7 +93,7 @@ class Link {
 	public:
 		virtual Channel* getChannel(int8_t id, bool reliable) = 0;
 
-		virtual void connectClosed(OnClosed::slot_function_type cb) = 0;
+		virtual boost::signals::connection connectClosed(OnClosed::slot_function_type cb) = 0;
 
 		virtual void close() = 0;
 };
@@ -86,8 +103,7 @@ class Socket {
 		typedef boost::signal<void (Link*)> OnAccept;
 
 		Socket()
-		{
-		}
+		{}
 
 	public:
 		virtual boost::signals::connection listen(OnAccept::slot_function_type cb) = 0;
@@ -101,30 +117,67 @@ class UdpLink;
 class UdpSocket;
 
 class UdpChannel : public Channel {
+	friend class UdpLink;
 	private:
-		OnCanReceive onCanReceive;
-		OnCanSend onCanSend;
+		OnReceive onReceive;
+
+		void propagatePacket(Packet packet)
+		{
+			onReceive(packet);
+		}
 
 	public:
-		ssize_t receive(char* buffer, size_t len);
 		ssize_t send(const char* buffer, size_t len);
 
-		boost::signals::connection connectReceive(OnCanReceive::slot_function_type cb);
-		boost::signals::connection connectSend(OnCanSend::slot_function_type cb);
+		boost::signals::connection connectReceive(OnReceive::slot_function_type cb);
 };
 
 class UdpLink : public Link {
+	friend class UdpSocket;
 	private:
+		class SocketHandler {
+			protected:
+				int fd;
+				UdpLink& parent;
+
+				SocketHandler(int fd, UdpLink& parent)
+					: fd(fd), parent(parent)
+				{}
+
+			public:
+				void onReceive(size_t size);
+		};
+		class StandaloneHandler : public SocketHandler {
+			private:
+				ev::io watcher;
+
+				void onPacketArrived(ev::io& io, int revents);
+
+			public:
+				StandaloneHandler(int fd, UdpLink& parent, ev_loop* loop)
+					: SocketHandler(fd, parent), watcher(loop)
+				{
+					watcher.set<StandaloneHandler, &StandaloneHandler::onPacketArrived>(this);
+					watcher.start(fd, ev::READ);
+				}
+		};
+
+		typedef std::map<uint8_t, UdpChannel*> channel_map;
+
 		OnClosed onClosed;
+		SocketHandler* handler;
+		channel_map channels;
 
 	public:
+		~UdpLink();
+
 		static UdpLink* connect(SocketAddress addr);
 
-		Channel* getChannel(int8_t id, bool reliable) = 0;
+		UdpChannel* getChannel(int8_t id, bool reliable);
 
-		void connectClosed(OnClosed::slot_function_type cb) = 0;
+		boost::signals::connection connectClosed(OnClosed::slot_function_type cb);
 
-		void close() = 0;
+		void close();
 };
 
 class UdpSocket : public Socket {

@@ -53,6 +53,75 @@ SocketAddress SocketAddress::parse(std::string addr, in_port_t port)
 
 
 
+
+/* UdpChannel */
+
+ssize_t UdpChannel::send(const char* buffer, size_t len)
+{
+}
+
+boost::signals::connection UdpChannel::connectReceive(OnReceive::slot_function_type cb)
+{
+}
+
+/* UdpLink */
+
+void UdpLink::SocketHandler::onReceive(size_t size)
+{
+	if (size < 1) {
+		// TODO: error handling
+	}
+
+	uint8_t* buffer = new uint8_t[size];
+
+	int err = read(fd, buffer, size);
+	if (err < 0) {
+		// TODO: error handling
+	}
+
+	uint8_t channel = buffer[0];
+	Packet packet(buffer, 0, size);
+
+	if (channel & 0x80) {
+		parent.getChannel(channel & ~0x80, true)->propagatePacket(packet);
+	} else {
+		parent.getChannel(channel, false)->propagatePacket(packet);
+	}
+}
+
+void UdpLink::StandaloneHandler::onPacketArrived(ev::io& io, int revents)
+{
+}
+
+UdpLink::~UdpLink()
+{
+	delete handler;
+
+	for (channel_map::iterator it = channels.begin(); it != channels.end(); it++) {
+		delete it->second;
+	}
+}
+
+UdpLink* UdpLink::connect(SocketAddress addr)
+{
+	// TODO: connect handling
+}
+
+UdpChannel* UdpLink::getChannel(int8_t id, bool reliable)
+{
+	// TODO: get channel
+}
+
+boost::signals::connection UdpLink::connectClosed(OnClosed::slot_function_type cb)
+{
+	return onClosed.connect(cb);
+}
+
+void UdpLink::close()
+{
+	// TODO: close handling
+}
+
 /* UdpSocket */
 
 UdpSocket::~UdpSocket()
@@ -70,9 +139,9 @@ void UdpSocket::onPacketArrived(ev::io& io, int revents)
 	char pbuf[16];
 	socklen_t addrlen = sizeof(addr);
 
-	int err = recvfrom(fd, pbuf, sizeof(pbuf), MSG_PEEK,
+	int plen = recvfrom(fd, pbuf, sizeof(pbuf), MSG_PEEK | MSG_TRUNC,
 			reinterpret_cast<sockaddr*>(&addr), &addrlen);
-	if (err < 0) {
+	if (plen < 0) {
 		// no error will happen here. trust me
 		return;
 	}
@@ -90,7 +159,7 @@ void UdpSocket::onPacketArrived(ev::io& io, int revents)
 	} else {
 		UdpLink* link = peers[s_addr];
 
-		// TODO: tell link that a packet was received
+		link->handler->onReceive(plen);
 	}
 }
 
