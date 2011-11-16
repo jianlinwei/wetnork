@@ -199,12 +199,12 @@ class UdpLink : public Link {
 	friend class UdpChannel;
 	friend class UdpSocket;
 	private:
-		class SocketHandler {
+		class LinkHandler {
 			protected:
 				int fd;
 				UdpLink& parent;
 
-				SocketHandler(int fd, UdpLink& parent)
+				LinkHandler(int fd, UdpLink& parent)
 					: fd(fd), parent(parent)
 				{}
 
@@ -212,19 +212,19 @@ class UdpLink : public Link {
 				virtual void onReceive(size_t size);
 				virtual ssize_t send(const msghdr* msg, int flags) = 0;
 		};
-		class AcceptedHandler : public SocketHandler {
+		class AcceptedHandler : public LinkHandler {
 			private:
 				SocketAddress peer;
 
 			protected:
 				AcceptedHandler(int fd, UdpLink& parent, SocketAddress peer)
-					: SocketHandler(fd, parent), peer(peer)
+					: LinkHandler(fd, parent), peer(peer)
 				{}
 
 			public:
 				ssize_t send(const msghdr* msg, int flags);
 		};
-		class ConnectedHandler : public SocketHandler {
+		class ConnectedHandler : public LinkHandler {
 			private:
 				ev::io watcher;
 
@@ -232,7 +232,7 @@ class UdpLink : public Link {
 
 			protected:
 				ConnectedHandler(int fd, UdpLink& parent, ev::loop_ref& loop)
-					: SocketHandler(fd, parent), watcher(loop)
+					: LinkHandler(fd, parent), watcher(loop)
 				{
 					watcher.set<ConnectedHandler, &ConnectedHandler::onPacketArrived>(this);
 					watcher.start(fd, ev::READ);
@@ -245,7 +245,7 @@ class UdpLink : public Link {
 		typedef std::map<uint8_t, UdpChannel*> channel_map;
 
 		OnClosed onClosed;
-		SocketHandler* handler;
+		LinkHandler* handler;
 		channel_map channels;
 		ev::loop_ref& loop;
 

@@ -100,7 +100,7 @@ boost::signals::connection UdpChannel::connectReceive(OnReceive::slot_function_t
 
 /* UdpLink */
 
-void UdpLink::SocketHandler::onReceive(size_t size)
+void UdpLink::LinkHandler::onReceive(size_t size)
 {
 	if (size < 1) {
 		// TODO: error handling
