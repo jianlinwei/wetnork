@@ -73,7 +73,7 @@ class Packet {
 
 		const uint8_t* data() const { return _data.get() + _offset; }
 
-		size_t length() const { return _length; }
+		size_t length() const { return _length - _offset; }
 };
 
 class Channel {
@@ -120,11 +120,19 @@ class UdpChannel : public Channel {
 	friend class UdpLink;
 	private:
 		OnReceive onReceive;
+		UdpLink& parent;
+		int8_t id;
+		bool reliable;
 
 		void propagatePacket(Packet packet)
 		{
 			onReceive(packet);
 		}
+
+	protected:
+		UdpChannel(UdpLink& parent, int8_t id, bool reliable)
+			: parent(parent), id(id), reliable(reliable)
+		{}
 
 	public:
 		ssize_t send(const char* buffer, size_t len);
@@ -133,6 +141,7 @@ class UdpChannel : public Channel {
 };
 
 class UdpLink : public Link {
+	friend class UdpChannel;
 	friend class UdpSocket;
 	private:
 		class SocketHandler {
@@ -145,21 +154,38 @@ class UdpLink : public Link {
 				{}
 
 			public:
-				void onReceive(size_t size);
+				virtual void onReceive(size_t size);
+
+				virtual ssize_t send(const msghdr* msg, int flags) = 0;
 		};
-		class StandaloneHandler : public SocketHandler {
+		class AcceptedHandler : public SocketHandler {
+			private:
+				SocketAddress peer;
+
+			protected:
+				AcceptedHandler(int fd, UdpLink& parent, SocketAddress peer)
+					: SocketHandler(fd, parent), peer(peer)
+				{}
+
+			public:
+				ssize_t send(const msghdr* msg, int flags);
+		};
+		class ConnectedHandler : public SocketHandler {
 			private:
 				ev::io watcher;
 
 				void onPacketArrived(ev::io& io, int revents);
 
-			public:
-				StandaloneHandler(int fd, UdpLink& parent, ev_loop* loop)
+			protected:
+				ConnectedHandler(int fd, UdpLink& parent, ev_loop* loop)
 					: SocketHandler(fd, parent), watcher(loop)
 				{
-					watcher.set<StandaloneHandler, &StandaloneHandler::onPacketArrived>(this);
+					watcher.set<ConnectedHandler, &ConnectedHandler::onPacketArrived>(this);
 					watcher.start(fd, ev::READ);
 				}
+
+			public:
+				ssize_t send(const msghdr* msg, int flags);
 		};
 
 		typedef std::map<uint8_t, UdpChannel*> channel_map;

@@ -58,10 +58,28 @@ SocketAddress SocketAddress::parse(std::string addr, in_port_t port)
 
 ssize_t UdpChannel::send(const char* buffer, size_t len)
 {
+	uint8_t cid = (reliable ? 0x80 : 0x00) | id;
+
+	if (reliable) {
+		// TODO: reliable channels
+	} else {
+		iovec iov[] = {
+			{ &cid, 1 },
+			{ const_cast<char*>(buffer), len }
+		};
+
+		msghdr msg;
+		memset(&msg, 0, sizeof(msg));
+		msg.msg_iov = iov;
+		msg.msg_iovlen = 2;
+
+		return parent.handler->send(&msg, 0);
+	}
 }
 
 boost::signals::connection UdpChannel::connectReceive(OnReceive::slot_function_type cb)
 {
+	return onReceive.connect(cb);
 }
 
 /* UdpLink */
@@ -89,8 +107,32 @@ void UdpLink::SocketHandler::onReceive(size_t size)
 	}
 }
 
-void UdpLink::StandaloneHandler::onPacketArrived(ev::io& io, int revents)
+ssize_t UdpLink::AcceptedHandler::send(const msghdr* msg, int flags)
 {
+	msghdr actual = *msg;
+	actual.msg_name = const_cast<sockaddr*>(peer.native());
+	actual.msg_namelen = peer.native_len();
+
+	return sendmsg(fd, &actual, flags);
+}
+
+
+void UdpLink::ConnectedHandler::onPacketArrived(ev::io& io, int revents)
+{
+	char pbuf[16];
+
+	int plen = recv(fd, pbuf, sizeof(pbuf), MSG_PEEK | MSG_TRUNC);
+	if (plen < 0) {
+		// no error will happen here. trust me
+		return;
+	}
+
+	onReceive(plen);
+}
+
+ssize_t UdpLink::ConnectedHandler::send(const msghdr* msg, int flags)
+{
+	return sendmsg(fd, msg, flags);
 }
 
 UdpLink::~UdpLink()
@@ -109,7 +151,15 @@ UdpLink* UdpLink::connect(SocketAddress addr)
 
 UdpChannel* UdpLink::getChannel(int8_t id, bool reliable)
 {
-	// TODO: get channel
+	if (id < 0) {
+		// TODO: error handling
+	}
+
+	uint8_t cid = (reliable ? 0x80 : 0) | id;
+	if (!channels.count(cid)) {
+		channels[cid] = new UdpChannel(*this, id, reliable);
+	}
+	return channels[cid];
 }
 
 boost::signals::connection UdpLink::connectClosed(OnClosed::slot_function_type cb)
