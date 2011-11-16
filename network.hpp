@@ -1,5 +1,5 @@
-#ifndef LINK_H
-#define LINK_H
+#ifndef NETWORK_H
+#define NETWORK_H
 
 #include <sys/socket.h>
 #include <ev++.h>
@@ -15,6 +15,7 @@
 
 
 class bad_address {};
+class bad_packet {};
 
 struct SocketAddress {
 	private:
@@ -75,11 +76,14 @@ class Packet {
 class Channel {
 	protected:
 		typedef boost::signal<void (Packet packet)> OnReceive;
+		typedef boost::signal<void ()> OnCanSend;
 
 	public:
 		virtual ssize_t send(const uint8_t* buffer, size_t len) = 0;
 
 		virtual boost::signals::connection connectReceive(OnReceive::slot_function_type cb) = 0;
+
+		virtual boost::signals::connection connectCanSend(OnCanSend::slot_function_type cb) = 0;
 };
 
 class Link {
@@ -119,6 +123,7 @@ class UdpChannel : public Channel {
 	friend class UdpLink;
 	protected:
 		OnReceive onReceive;
+		OnCanSend onCanSend;
 		UdpLink& parent;
 		uint8_t cid;
 
@@ -132,6 +137,8 @@ class UdpChannel : public Channel {
 		ssize_t send(const uint8_t* buffer, size_t len) = 0;
 
 		boost::signals::connection connectReceive(OnReceive::slot_function_type cb);
+
+		boost::signals::connection connectCanSend(OnCanSend::slot_function_type cb);
 };
 
 class UdpLink : public Link {

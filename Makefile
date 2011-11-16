@@ -1,8 +1,14 @@
 TARGET = wetnork
 
 OBJ = wetnork.o \
-	  network.o \
 	  SocketAddress.o \
+	  UnreliableUdpChannel.o \
+	  ReliableUdpChannel.o \
+	  UdpChannel.o \
+	  AcceptedUdpLink.o \
+	  ConnectedUdpLink.o \
+	  UdpLink.o \
+	  UdpSocket.o \
 	  tun.o
 
 LIBRARIES = libconfig \
