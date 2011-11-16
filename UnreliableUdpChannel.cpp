@@ -17,7 +17,14 @@ struct UnreliableUdpPacketHeader {
 			: _cid(cid)
 		{}
 
+		UnreliableUdpPacketHeader(const uint8_t* data)
+			: _cid(data[0])
+		{}
+
 		uint8_t cid() const { return _cid; }
+
+		void* data() { return &_cid; }
+		size_t size() const { return sizeof(_cid); }
 };
 
 ssize_t UnreliableUdpChannel::send(const uint8_t* buffer, size_t len)
@@ -25,7 +32,7 @@ ssize_t UnreliableUdpChannel::send(const uint8_t* buffer, size_t len)
 	UnreliableUdpPacketHeader header(cid);
 
 	iovec iov[] = {
-		{ &header, sizeof(header) },
+		{ header.data(), header.size() },
 		{ const_cast<uint8_t*>(buffer), len }
 	};
 
