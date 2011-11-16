@@ -122,132 +122,45 @@ class UdpSocket;
 
 class UdpChannel : public Channel {
 	friend class UdpLink;
-	private:
-		class ChannelHandler {
-			protected:
-				UdpChannel& parent;
-
-			public:
-				ChannelHandler(UdpChannel& parent)
-					: parent(parent)
-				{}
-
-				virtual ssize_t send(const uint8_t* buffer, size_t len) = 0;
-				virtual void propagate(Packet packet) = 0;
-		};
-		class UnreliableChannelHandler : public ChannelHandler {
-			public:
-				UnreliableChannelHandler(UdpChannel& parent)
-					: ChannelHandler(parent)
-				{}
-
-				ssize_t send(const uint8_t* buffer, size_t len);
-				void propagate(Packet packet);
-		};
-		class ReliableChannelHandler : public ChannelHandler {
-			private:
-				ev::timer timeout;
-				std::queue<Packet> queue;
-				uint32_t currentSeqNum;
-
-				void onTimeout(ev::timer& timer, int revents);
-
-			public:
-				ReliableChannelHandler(UdpChannel& parent, ev::loop_ref& loop)
-					: ChannelHandler(parent), timeout(loop)
-				{}
-
-				ssize_t send(const uint8_t* buffer, size_t len);
-				void propagate(Packet packet);
-		};
-
+	protected:
 		OnReceive onReceive;
 		UdpLink& parent;
 		uint8_t cid;
-		ChannelHandler* handler;
 
-		void propagatePacket(Packet packet)
-		{
-			onReceive(packet);
-		}
+		UdpChannel(UdpLink& parent, uint8_t cid)
+			: parent(parent), cid(cid)
+		{}
 
-	protected:
-		UdpChannel(UdpLink& parent, int8_t id, bool reliable, ev::loop_ref& loop)
-			: parent(parent)
-		{
-			if (reliable) {
-				cid = 0x80 | id;
-				handler = new ReliableChannelHandler(*this, loop);
-			} else {
-				cid = id;
-				handler = new UnreliableChannelHandler(*this);
-			}
-		}
+		virtual void propagate(Packet packet) = 0;
 
 	public:
-		~UdpChannel()
-		{
-			delete handler;
-		}
-
-		ssize_t send(const uint8_t* buffer, size_t len);
+		ssize_t send(const uint8_t* buffer, size_t len) = 0;
 
 		boost::signals::connection connectReceive(OnReceive::slot_function_type cb);
 };
 
 class UdpLink : public Link {
 	friend class UdpChannel;
+	friend class UnreliableUdpChannel;
+	friend class ReliableUdpChannel;
 	friend class UdpSocket;
 	private:
-		class LinkHandler {
-			protected:
-				int fd;
-				UdpLink& parent;
-
-				LinkHandler(int fd, UdpLink& parent)
-					: fd(fd), parent(parent)
-				{}
-
-			public:
-				virtual void onReceive(size_t size);
-				virtual ssize_t send(const msghdr* msg, int flags) = 0;
-		};
-		class AcceptedHandler : public LinkHandler {
-			private:
-				SocketAddress peer;
-
-			protected:
-				AcceptedHandler(int fd, UdpLink& parent, SocketAddress peer)
-					: LinkHandler(fd, parent), peer(peer)
-				{}
-
-			public:
-				ssize_t send(const msghdr* msg, int flags);
-		};
-		class ConnectedHandler : public LinkHandler {
-			private:
-				ev::io watcher;
-
-				void onPacketArrived(ev::io& io, int revents);
-
-			protected:
-				ConnectedHandler(int fd, UdpLink& parent, ev::loop_ref& loop)
-					: LinkHandler(fd, parent), watcher(loop)
-				{
-					watcher.set<ConnectedHandler, &ConnectedHandler::onPacketArrived>(this);
-					watcher.start(fd, ev::READ);
-				}
-
-			public:
-				ssize_t send(const msghdr* msg, int flags);
-		};
-
 		typedef std::map<uint8_t, UdpChannel*> channel_map;
 
 		OnClosed onClosed;
-		LinkHandler* handler;
 		channel_map channels;
 		ev::loop_ref& loop;
+
+	protected:
+		int fd;
+
+		UdpLink(int fd, ev::loop_ref& loop)
+			: loop(loop), fd(fd)
+		{}
+
+		void onReceive(size_t size);
+
+		virtual ssize_t send(const msghdr* msg, int flags) = 0;
 
 	public:
 		~UdpLink();
