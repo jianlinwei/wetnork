@@ -36,18 +36,9 @@ struct SocketAddress {
 
 		socklen_t native_len() const { return len; }
 
-		bool operator<(const SocketAddress& other) const
-		{
-			return len < other.len
-				? -1
-				: memcmp(&addr, &other.addr, len);
-		}
+		bool operator<(const SocketAddress& other) const;
 
-		bool operator==(const SocketAddress& other) const
-		{
-			return len == other.len
-				&& memcmp(&addr, &other.addr, len) == 0;
-		}
+		bool operator==(const SocketAddress& other) const;
 };
 
 

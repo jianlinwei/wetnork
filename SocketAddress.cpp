@@ -49,3 +49,16 @@ SocketAddress SocketAddress::parse(std::string addr, in_port_t port)
 	return result;
 }
 
+bool SocketAddress::operator<(const SocketAddress& other) const
+{
+	return len < other.len
+		? -1
+		: memcmp(&addr, &other.addr, len);
+}
+
+bool SocketAddress::operator==(const SocketAddress& other) const
+{
+	return len == other.len
+		&& memcmp(&addr, &other.addr, len) == 0;
+}
+
