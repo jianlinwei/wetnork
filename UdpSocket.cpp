@@ -69,4 +69,7 @@ boost::signals::connection UdpSocket::listen(OnAccept::slot_function_type cb)
 	return onAccept.connect(cb);
 }
 
-
+void UdpSocket::connect(boost::function<void (UdpLink*)> cb)
+{
+	// TODO: connect handling
+}

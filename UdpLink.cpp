@@ -42,6 +42,15 @@ UdpLink* UdpLink::connect(SocketAddress addr)
 	// TODO: connect handling
 }
 
+ssize_t UdpLink::send(const msghdr* msg, int flags)
+{
+	msghdr actual = *msg;
+	actual.msg_name = const_cast<sockaddr*>(peer.native());
+	actual.msg_namelen = peer.native_len();
+
+	return sendmsg(fd, &actual, flags);
+}
+
 UdpChannel* UdpLink::getChannel(int8_t id, bool reliable)
 {
 	if (id < 0) {

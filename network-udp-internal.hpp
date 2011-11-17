@@ -37,36 +37,4 @@ class ReliableUdpChannel : public UdpChannel {
 		void propagate(Packet packet);
 };
 
-class AcceptedUdpLink : public UdpLink {
-	private:
-		SocketAddress peer;
-
-	protected:
-		AcceptedUdpLink(int fd, ev::loop_ref& loop, SocketAddress peer)
-			: UdpLink(fd, loop), peer(peer)
-		{}
-
-	public:
-		ssize_t send(const msghdr* msg, int flags);
-};
-
-class ConnectedUdpLink : public UdpLink {
-	private:
-		ev::io watcher;
-
-		void onPacketArrived(ev::io& io, int revents);
-
-	protected:
-		ConnectedUdpLink(int fd, ev::loop_ref& loop)
-			: UdpLink(fd, loop), watcher(loop)
-		{
-			watcher.set<ConnectedUdpLink, &ConnectedUdpLink::onPacketArrived>(this);
-			watcher.start(fd, ev::READ);
-		}
-
-	public:
-		ssize_t send(const msghdr* msg, int flags);
-};
-
-
 #endif

@@ -10,6 +10,7 @@
 #include <string>
 #include <arpa/inet.h>
 #include <boost/shared_array.hpp>
+#include <boost/function.hpp>
 
 #include "network.hpp"
 
@@ -50,17 +51,18 @@ class UdpLink : public Link {
 		OnClosed onClosed;
 		channel_map channels;
 		ev::loop_ref& loop;
+		SocketAddress peer;
 
 	protected:
 		int fd;
 
-		UdpLink(int fd, ev::loop_ref& loop)
-			: loop(loop), fd(fd)
+		UdpLink(int fd, SocketAddress& peer, ev::loop_ref& loop)
+			: loop(loop), peer(peer), fd(fd)
 		{}
 
 		void onReceive(size_t size);
 
-		virtual ssize_t send(const msghdr* msg, int flags) = 0;
+		ssize_t send(const msghdr* msg, int flags);
 
 	public:
 		~UdpLink();
@@ -99,6 +101,8 @@ class UdpSocket : public Socket {
 		static UdpSocket* create(SocketAddress addr, ev::loop_ref& loop);
 
 		boost::signals::connection listen(OnAccept::slot_function_type cb);
+
+		void connect(boost::function<void (UdpLink* link)> cb);
 };
 
 #endif

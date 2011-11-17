@@ -5,8 +5,6 @@ OBJ = wetnork.o \
 	  UnreliableUdpChannel.o \
 	  ReliableUdpChannel.o \
 	  UdpChannel.o \
-	  AcceptedUdpLink.o \
-	  ConnectedUdpLink.o \
 	  UdpLink.o \
 	  UdpSocket.o \
 	  tun.o
