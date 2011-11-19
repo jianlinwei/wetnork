@@ -20,7 +20,7 @@ SocketAddress::SocketAddress(sockaddr* addr)
 			break;
 
 		default:
-			throw bad_address("Unsupported address family");
+			throw BadAddress("Unsupported address family");
 	}
 
 	memcpy(&this->addr, addr, len);
@@ -35,13 +35,13 @@ SocketAddress SocketAddress::parse(std::string addr, in_port_t port)
 	if (addr.find(':') < addr.size()) {
 		result.len = sizeof(sockaddr_in6);
 		if (inet_pton(AF_INET6, addr.c_str(), &result.addr.in6.sin6_addr) < 0) {
-			throw bad_address("Cannot parse IP address");
+			throw BadAddress("Cannot parse IP address");
 		}
 		result.addr.in6.sin6_port = htons(port);
 	} else {
 		result.len = sizeof(sockaddr_in);
 		if (inet_pton(AF_INET, addr.c_str(), &result.addr.in.sin_addr) < 0) {
-			throw bad_address("Cannot parse IP address");
+			throw BadAddress("Cannot parse IP address");
 		}
 		result.addr.in.sin_port = htons(port);
 	}

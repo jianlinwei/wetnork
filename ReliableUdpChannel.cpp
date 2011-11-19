@@ -71,7 +71,7 @@ void ReliableUdpChannel::transmitPacket(Packet packet)
 
 	int result = parent.send(&msg, 0);
 	if (result < packet.length() + sizeof(header)) {
-		throw bad_send(strerror(errno));
+		throw BadSend(strerror(errno));
 	}
 }
 

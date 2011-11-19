@@ -10,30 +10,26 @@
 #include <string>
 #include <arpa/inet.h>
 #include <boost/shared_array.hpp>
+#include "exception.hpp"
 
-class network_exception {
-	private:
-		const char* _what;
-
+class NetworkException : public Exception {
 	public:
-		network_exception(const char* what)
-			: _what(what)
-		{}
-
-		const char* what() const { return _what; }
-};
-
-class bad_address : public network_exception {
-	public:
-		bad_address(const char* what)
-			: network_exception(what)
+		NetworkException(const char* what)
+			: Exception(what)
 		{}
 };
 
-class bad_send : public network_exception {
+class BadAddress : public NetworkException {
 	public:
-		bad_send(const char* what)
-			: network_exception(what)
+		BadAddress(const char* what)
+			: NetworkException(what)
+		{}
+};
+
+class BadSend : public NetworkException {
+	public:
+		BadSend(const char* what)
+			: NetworkException(what)
 		{}
 };
 

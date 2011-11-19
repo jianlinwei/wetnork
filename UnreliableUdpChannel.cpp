@@ -43,7 +43,7 @@ ssize_t UnreliableUdpChannel::send(const uint8_t* buffer, size_t len)
 
 	int result = parent.send(&msg, 0);
 	if (result < len + sizeof(header)) {
-		throw bad_send(strerror(errno));
+		throw BadSend(strerror(errno));
 	}
 
 	return true;

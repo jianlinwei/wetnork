@@ -58,7 +58,7 @@ UdpSocket* UdpSocket::create(SocketAddress addr, ev::loop_ref& loop)
 	int err = bind(fd, addr.native(), addr.native_len());
 	if (err < 0) {
 		close(fd);
-		throw bad_address(strerror(errno));
+		throw BadAddress(strerror(errno));
 	}
 
 	return new UdpSocket(fd, loop);
