@@ -6,6 +6,25 @@
 
 #include "network.hpp"
 
+SocketAddress::SocketAddress()
+{
+}
+
+int SocketAddress::family() const
+{
+	return addr.in.sin_family;
+}
+
+const sockaddr* SocketAddress::native() const
+{
+	return reinterpret_cast<const sockaddr*>(&addr);
+}
+
+socklen_t SocketAddress::native_len() const
+{
+	return len;
+}
+
 SocketAddress::SocketAddress(sockaddr* addr)
 {
 	sockaddr_in* sin = reinterpret_cast<sockaddr_in*>(addr);

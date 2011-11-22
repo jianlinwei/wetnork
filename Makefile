@@ -2,21 +2,28 @@ TARGET = wetnork
 
 OBJ = wetnork.o \
 	  SocketAddress.o \
+	  Exception.o \
+	  NetworkException.o \
+	  BadAddress.o \
+	  BadSend.o \
+	  Packet.o \
+	  Socket.o \
+	  Channel.o \
+	  Link.o \
 	  UnreliableUdpChannel.o \
 	  ReliableUdpChannel.o \
 	  UdpChannel.o \
 	  UdpLink.o \
 	  UdpSocket.o \
-	  tun.o
+	  TunDevice.o
 
-LIBRARIES = libconfig \
-			gnutls
+LIBRARIES = gnutls
 
 LIBRARIES_WITHOUT_PKGCONFIG = -lev -lboost_signals
 
 DEFINES = -DEV_COMPAT3=0
 
-CXXFLAGS += -O2 -ansi -Wall -pedantic $(DEFINES) `pkg-config --cflags $(LIBRARIES)`
+CXXFLAGS += -O2 -ansi -Wall -Wnon-virtual-dtor -pedantic $(DEFINES) `pkg-config --cflags $(LIBRARIES)`
 LDFLAGS += `pkg-config --libs $(LIBRARIES)` $(LIBRARIES_WITHOUT_PKGCONFIG)
 
 all: $(TARGET)

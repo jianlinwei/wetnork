@@ -8,6 +8,13 @@
 #include "network.hpp"
 #include "network-udp-internal.hpp"
 
+UdpSocket::UdpSocket(int fd, ev::loop_ref& loop)
+	: fd(fd), watcher(loop), loop(loop)
+{
+	watcher.set<UdpSocket, &UdpSocket::onPacketArrived>(this);
+	watcher.start(fd, ev::READ);
+}
+
 UdpSocket::~UdpSocket()
 {
 	watcher.stop();

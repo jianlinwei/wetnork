@@ -19,21 +19,14 @@ class TunDevice : private boost::noncopyable {
 
 		void watcherEvent(ev::io& io, int revents);
 
-		TunDevice(const int fd, const std::string name, ev_loop* loop)
-			: fd(fd), _name(name), watcher(loop)
-		{
-			watcher.set<TunDevice, &TunDevice::watcherEvent>(this);
-		}
+		TunDevice(const int fd, const std::string name, ev_loop* loop);
 
 	public:
 		static TunDevice* create(const std::string name_template, ev_loop* loop);
 
 		~TunDevice();
 
-		const std::string name() const
-		{
-			return _name;
-		}
+		const std::string name() const;
 
 		ssize_t read(char *buffer, size_t len);
 		ssize_t write(const char *buffer, size_t len);

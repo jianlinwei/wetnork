@@ -26,6 +26,11 @@ struct UnreliableUdpPacketHeader {
 		void* data() { return &_cid; }
 		size_t size() const { return sizeof(_cid); }
 };
+		
+UnreliableUdpChannel::UnreliableUdpChannel(UdpLink& parent, uint8_t cid)
+	: UdpChannel(parent, cid)
+{
+}
 
 ssize_t UnreliableUdpChannel::send(const uint8_t* buffer, size_t len)
 {

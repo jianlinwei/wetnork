@@ -7,6 +7,11 @@
 #include "network.hpp"
 #include "network-udp-internal.hpp"
 
+UdpLink::UdpLink(int fd, SocketAddress& peer, ev::loop_ref& loop)
+	: loop(loop), peer(peer), fd(fd)
+{
+}
+
 void UdpLink::onReceive(size_t size)
 {
 	if (size < 1) {

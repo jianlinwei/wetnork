@@ -26,9 +26,7 @@ class UdpChannel : public Channel {
 		UdpLink& parent;
 		uint8_t cid;
 
-		UdpChannel(UdpLink& parent, uint8_t cid)
-			: parent(parent), cid(cid)
-		{}
+		UdpChannel(UdpLink& parent, uint8_t cid);
 
 		virtual void propagate(Packet packet) = 0;
 
@@ -56,9 +54,7 @@ class UdpLink : public Link {
 	protected:
 		int fd;
 
-		UdpLink(int fd, SocketAddress& peer, ev::loop_ref& loop)
-			: loop(loop), peer(peer), fd(fd)
-		{}
+		UdpLink(int fd, SocketAddress& peer, ev::loop_ref& loop);
 
 		void onReceive(size_t size);
 
@@ -76,7 +72,7 @@ class UdpLink : public Link {
 		void close();
 };
 
-class UdpSocket : public Socket {
+class UdpSocket : public Socket, public boost::noncopyable {
 	private:
 		typedef std::map<SocketAddress, UdpLink*> peers_map;
 
@@ -88,12 +84,7 @@ class UdpSocket : public Socket {
 
 		void onPacketArrived(ev::io& io, int revents);
 
-		UdpSocket(int fd, ev::loop_ref& loop)
-			: fd(fd), watcher(loop), loop(loop)
-		{
-			watcher.set<UdpSocket, &UdpSocket::onPacketArrived>(this);
-			watcher.start(fd, ev::READ);
-		}
+		UdpSocket(int fd, ev::loop_ref& loop);
 
 	public:
 		~UdpSocket();

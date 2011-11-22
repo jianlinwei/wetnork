@@ -41,6 +41,13 @@ struct ReliableUdpPacketHeader {
 		size_t size() const { return sizeof(header); }
 };
 
+ReliableUdpChannel::ReliableUdpChannel(UdpLink& parent, uint8_t cid, ev::loop_ref& loop)
+	: UdpChannel(parent, cid), timeout(loop), inFlightPacket(NULL),
+		localSeq(0), peerSeq(0)
+{
+	timeout.set<ReliableUdpChannel, &ReliableUdpChannel::onTimeout>(this);
+}
+
 void ReliableUdpChannel::onTimeout(ev::timer& timer, int revents)
 {
 	transmitQueue();

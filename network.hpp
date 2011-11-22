@@ -14,23 +14,17 @@
 
 class NetworkException : public Exception {
 	public:
-		NetworkException(const char* what)
-			: Exception(what)
-		{}
+		NetworkException(const char* what);
 };
 
 class BadAddress : public NetworkException {
 	public:
-		BadAddress(const char* what)
-			: NetworkException(what)
-		{}
+		BadAddress(const char* what);
 };
 
 class BadSend : public NetworkException {
 	public:
-		BadSend(const char* what)
-			: NetworkException(what)
-		{}
+		BadSend(const char* what);
 };
 
 struct SocketAddress {
@@ -41,19 +35,18 @@ struct SocketAddress {
 		} addr;
 		socklen_t len;
 
-		SocketAddress()
-		{}
+		SocketAddress();
 
 	public:
 		SocketAddress(sockaddr* addr);						
 
 		static SocketAddress parse(std::string addr, in_port_t port);
 
-		int family() const { return addr.in.sin_family; }
+		int family() const;
 
-		const sockaddr* native() const { return reinterpret_cast<const sockaddr*>(&addr); }
+		const sockaddr* native() const;
 
-		socklen_t native_len() const { return len; }
+		socklen_t native_len() const;
 
 		bool operator<(const SocketAddress& other) const;
 
@@ -71,13 +64,11 @@ class Packet {
 		size_t _length;
 
 	public:
-		Packet(const uint8_t* data, off_t offset, size_t length)
-			: _data(data), _offset(offset), _length(length)
-		{}
+		Packet(const uint8_t* data, off_t offset, size_t length);
 
-		const uint8_t* data() const { return _data.get() + _offset; }
+		const uint8_t* data() const;
 
-		size_t length() const { return _length; }
+		size_t length() const;
 };
 
 class Channel {
@@ -86,6 +77,8 @@ class Channel {
 		typedef boost::signal<void ()> OnCanSend;
 
 	public:
+		virtual ~Channel();
+
 		virtual ssize_t send(const uint8_t* buffer, size_t len) = 0;
 
 		virtual boost::signals::connection connectReceive(OnReceive::slot_function_type cb) = 0;
@@ -98,6 +91,8 @@ class Link {
 		typedef boost::signal<void ()> OnClosed;
 
 	public:
+		virtual ~Link();
+
 		virtual Channel* getChannel(int8_t id, bool reliable) = 0;
 
 		virtual boost::signals::connection connectClosed(OnClosed::slot_function_type cb) = 0;
@@ -109,10 +104,11 @@ class Socket {
 	protected:
 		typedef boost::signal<void (Link*)> OnAccept;
 
-		Socket()
-		{}
+		Socket();
 
 	public:
+		virtual ~Socket();
+
 		virtual boost::signals::connection listen(OnAccept::slot_function_type cb) = 0;
 };
 

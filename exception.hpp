@@ -8,11 +8,9 @@ class Exception : public std::exception {
 		const char* _what;
 
 	public:
-		Exception(const char* what)
-			: _what(what)
-		{}
+		Exception(const char* what);
 
-		const char* what() const throw() { return _what; }
+		const char* what() const throw();
 };
 
 #endif
