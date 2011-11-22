@@ -20,6 +20,7 @@ struct ReliableUdpPacketHeader {
 
 	public:
 		static const uint8_t ACK = 0x01;
+		static const size_t size = sizeof(header_t);
 
 		ReliableUdpPacketHeader(uint8_t cid, uint8_t flags, uint32_t seq)
 		{
@@ -38,7 +39,6 @@ struct ReliableUdpPacketHeader {
 		uint32_t seq() const { return ntohl(header.seq); }
 
 		void* data() { return &header; }
-		size_t size() const { return sizeof(header); }
 };
 
 ReliableUdpChannel::ReliableUdpChannel(UdpLink& parent, uint8_t cid, ev::loop_ref& loop)
@@ -67,7 +67,7 @@ void ReliableUdpChannel::transmitPacket(Packet packet)
 	ReliableUdpPacketHeader header(cid, 0, localSeq);
 
 	iovec iov[] = {
-		{ header.data(), header.size() },
+		{ header.data(), ReliableUdpPacketHeader::size },
 		{ const_cast<uint8_t*>(packet.data()), packet.length() }
 	};
 
@@ -77,7 +77,7 @@ void ReliableUdpChannel::transmitPacket(Packet packet)
 	msg.msg_iovlen = 2;
 
 	int result = parent.send(&msg, 0);
-	if (result < packet.length() + sizeof(header)) {
+	if (result < packet.length() + ReliableUdpPacketHeader::size) {
 		throw BadSend(strerror(errno));
 	}
 }
@@ -110,14 +110,14 @@ void ReliableUdpChannel::propagate(Packet packet)
 		ReliableUdpPacketHeader ackHeader(cid, ReliableUdpPacketHeader::ACK, header.seq());
 
 		if (peerSeq < header.seq()) {
-			onReceive(Packet(packet.data(), sizeof(ackHeader),
-						packet.length() - sizeof(ackHeader)));
+			onReceive(Packet(packet.data(), ReliableUdpPacketHeader::size,
+						packet.length() - ReliableUdpPacketHeader::size));
 		}
 
 		peerSeq = peerSeq < header.seq() ? header.seq() : peerSeq;
 
 		iovec iov[] = {
-			{ ackHeader.data(), ackHeader.size() }
+			{ ackHeader.data(), ReliableUdpPacketHeader::size }
 		};
 
 		msghdr msg;
