@@ -33,13 +33,13 @@ UnreliableUdpChannel::UnreliableUdpChannel(UdpLink& parent, uint8_t cid)
 {
 }
 
-ssize_t UnreliableUdpChannel::send(const uint8_t* buffer, size_t len)
+ssize_t UnreliableUdpChannel::send(const Packet& packet)
 {
 	UnreliableUdpPacketHeader header(cid);
 
 	iovec iov[] = {
 		{ header.data(), UnreliableUdpPacketHeader::size },
-		{ const_cast<uint8_t*>(buffer), len }
+		{ const_cast<uint8_t*>(packet.data()), packet.length() }
 	};
 
 	msghdr msg;
@@ -48,16 +48,16 @@ ssize_t UnreliableUdpChannel::send(const uint8_t* buffer, size_t len)
 	msg.msg_iovlen = 2;
 
 	int result = parent.send(&msg, 0);
-	if (result < len + UnreliableUdpPacketHeader::size) {
+	if (result < packet.length() + UnreliableUdpPacketHeader::size) {
 		throw BadSend(strerror(errno));
 	}
 
 	return true;
 }
 
-void UnreliableUdpChannel::propagate(Packet packet)
+void UnreliableUdpChannel::propagate(const Packet& packet)
 {
-	onReceive(Packet(packet.data(), UnreliableUdpPacketHeader::size,
+	onReceive(*this, Packet(packet.data(), UnreliableUdpPacketHeader::size,
 				packet.length() - UnreliableUdpPacketHeader::size));
 }
 

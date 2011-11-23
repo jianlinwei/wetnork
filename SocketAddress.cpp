@@ -25,9 +25,9 @@ socklen_t SocketAddress::native_len() const
 	return len;
 }
 
-SocketAddress::SocketAddress(sockaddr* addr)
+SocketAddress::SocketAddress(const sockaddr* addr)
 {
-	sockaddr_in* sin = reinterpret_cast<sockaddr_in*>(addr);
+	const sockaddr_in* sin = reinterpret_cast<const sockaddr_in*>(addr);
 
 	switch (sin->sin_family) {
 		case AF_INET:
@@ -45,7 +45,7 @@ SocketAddress::SocketAddress(sockaddr* addr)
 	memcpy(&this->addr, addr, len);
 }
 
-SocketAddress SocketAddress::parse(std::string addr, in_port_t port)
+SocketAddress SocketAddress::parse(const std::string& addr, in_port_t port)
 {
 	SocketAddress result;
 

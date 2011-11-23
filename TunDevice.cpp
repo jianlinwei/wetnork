@@ -11,7 +11,7 @@
 
 #include "tun.hpp"
 
-TunDevice::TunDevice(const int fd, const std::string name, ev_loop* loop)
+TunDevice::TunDevice(const int fd, const std::string& name, const ev::loop_ref& loop)
 	: fd(fd), _name(name), watcher(loop)
 {
 	watcher.set<TunDevice, &TunDevice::watcherEvent>(this);
@@ -22,7 +22,7 @@ const std::string TunDevice::name() const
 	return _name;
 }
 
-TunDevice* TunDevice::create(const std::string name_template, ev_loop* loop)
+TunDevice* TunDevice::create(const std::string& name_template, const ev::loop_ref& loop)
 {
 	struct ifreq ifr;
 	int fd;

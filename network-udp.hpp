@@ -28,10 +28,10 @@ class UdpChannel : public Channel {
 
 		UdpChannel(UdpLink& parent, uint8_t cid);
 
-		virtual void propagate(Packet packet) = 0;
+		virtual void propagate(const Packet& packet) = 0;
 
 	public:
-		ssize_t send(const uint8_t* buffer, size_t len) = 0;
+		ssize_t send(const Packet& packet) = 0;
 
 		boost::signals::connection connectReceive(OnReceive::slot_function_type cb);
 
@@ -54,7 +54,7 @@ class UdpLink : public Link {
 	protected:
 		int fd;
 
-		UdpLink(int fd, SocketAddress& peer, ev::loop_ref& loop);
+		UdpLink(int fd, const SocketAddress& peer, ev::loop_ref& loop);
 
 		void onReceive(size_t size);
 
@@ -63,7 +63,7 @@ class UdpLink : public Link {
 	public:
 		~UdpLink();
 
-		static UdpLink* connect(SocketAddress addr);
+		static UdpLink* connect(const SocketAddress& addr);
 
 		UdpChannel* getChannel(int8_t id, bool reliable);
 
@@ -89,7 +89,7 @@ class UdpSocket : public Socket, public boost::noncopyable {
 	public:
 		~UdpSocket();
 
-		static UdpSocket* create(SocketAddress addr, ev::loop_ref& loop);
+		static UdpSocket* create(const SocketAddress& addr, ev::loop_ref& loop);
 
 		boost::signals::connection listen(OnAccept::slot_function_type cb);
 

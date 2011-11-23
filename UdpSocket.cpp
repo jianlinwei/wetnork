@@ -54,7 +54,7 @@ void UdpSocket::onPacketArrived(ev::io& io, int revents)
 	}
 }
 
-UdpSocket* UdpSocket::create(SocketAddress addr, ev::loop_ref& loop)
+UdpSocket* UdpSocket::create(const SocketAddress& addr, ev::loop_ref& loop)
 {
 	int fd = socket(addr.family(), SOCK_DGRAM, IPPROTO_UDP);
 

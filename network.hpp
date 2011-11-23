@@ -38,9 +38,9 @@ struct SocketAddress {
 		SocketAddress();
 
 	public:
-		SocketAddress(sockaddr* addr);						
+		SocketAddress(const sockaddr* addr);						
 
-		static SocketAddress parse(std::string addr, in_port_t port);
+		static SocketAddress parse(const std::string& addr, in_port_t port);
 
 		int family() const;
 
@@ -73,13 +73,13 @@ class Packet {
 
 class Channel {
 	protected:
-		typedef boost::signal<void (Packet packet)> OnReceive;
-		typedef boost::signal<void ()> OnCanSend;
+		typedef boost::signal<void (const Channel& sender, const Packet& packet)> OnReceive;
+		typedef boost::signal<void (const Channel& sender)> OnCanSend;
 
 	public:
 		virtual ~Channel();
 
-		virtual ssize_t send(const uint8_t* buffer, size_t len) = 0;
+		virtual ssize_t send(const Packet& packet) = 0;
 
 		virtual boost::signals::connection connectReceive(OnReceive::slot_function_type cb) = 0;
 
@@ -88,7 +88,7 @@ class Channel {
 
 class Link {
 	protected:
-		typedef boost::signal<void ()> OnClosed;
+		typedef boost::signal<void (const Link& sender)> OnClosed;
 
 	public:
 		virtual ~Link();
@@ -102,7 +102,7 @@ class Link {
 
 class Socket {
 	protected:
-		typedef boost::signal<void (Link*)> OnAccept;
+		typedef boost::signal<void (const Socket& sender, Link* link)> OnAccept;
 
 		Socket();
 

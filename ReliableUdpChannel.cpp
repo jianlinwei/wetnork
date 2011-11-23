@@ -62,7 +62,7 @@ void ReliableUdpChannel::transmitQueue()
 	}
 }
 
-void ReliableUdpChannel::transmitPacket(Packet packet)
+void ReliableUdpChannel::transmitPacket(const Packet& packet)
 {
 	ReliableUdpPacketHeader header(cid, 0, localSeq);
 
@@ -82,20 +82,18 @@ void ReliableUdpChannel::transmitPacket(Packet packet)
 	}
 }
 
-ssize_t ReliableUdpChannel::send(const uint8_t* buffer, size_t len)
+ssize_t ReliableUdpChannel::send(const Packet& packet)
 {
 	if (inFlightPacket) {
 		return false;
 	}
 
-	uint8_t* pbuffer = new uint8_t[len];
-	memcpy(pbuffer, buffer, len);
-	inFlightPacket = new Packet(pbuffer, 0, len);
+	inFlightPacket = new Packet(packet);
 
 	return true;
 }
 
-void ReliableUdpChannel::propagate(Packet packet)
+void ReliableUdpChannel::propagate(const Packet& packet)
 {
 	ReliableUdpPacketHeader header(packet.data());
 
@@ -105,12 +103,12 @@ void ReliableUdpChannel::propagate(Packet packet)
 		delete inFlightPacket;
 		inFlightPacket = NULL;
 
-		onCanSend();
+		onCanSend(*this);
 	} else if (header.flags() == 0) {
 		ReliableUdpPacketHeader ackHeader(cid, ReliableUdpPacketHeader::ACK, header.seq());
 
 		if (peerSeq < header.seq()) {
-			onReceive(Packet(packet.data(), ReliableUdpPacketHeader::size,
+			onReceive(*this, Packet(packet.data(), ReliableUdpPacketHeader::size,
 						packet.length() - ReliableUdpPacketHeader::size));
 		}
 

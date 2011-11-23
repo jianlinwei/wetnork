@@ -8,8 +8,8 @@ class UnreliableUdpChannel : public UdpChannel {
 	public:
 		UnreliableUdpChannel(UdpLink& parent, uint8_t cid);
 
-		ssize_t send(const uint8_t* buffer, size_t len);
-		void propagate(Packet packet);
+		ssize_t send(const Packet& packet);
+		void propagate(const Packet& packet);
 };
 
 class ReliableUdpChannel : public UdpChannel {
@@ -21,13 +21,13 @@ class ReliableUdpChannel : public UdpChannel {
 		void onTimeout(ev::timer& timer, int revents);
 
 		void transmitQueue();
-		void transmitPacket(Packet packet);
+		void transmitPacket(const Packet& packet);
 
 	public:
 		ReliableUdpChannel(UdpLink& parent, uint8_t cid, ev::loop_ref& loop);
 
-		ssize_t send(const uint8_t* buffer, size_t len);
-		void propagate(Packet packet);
+		ssize_t send(const Packet& packet);
+		void propagate(const Packet& packet);
 };
 
 #endif

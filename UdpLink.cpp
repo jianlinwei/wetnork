@@ -7,7 +7,7 @@
 #include "network.hpp"
 #include "network-udp-internal.hpp"
 
-UdpLink::UdpLink(int fd, SocketAddress& peer, ev::loop_ref& loop)
+UdpLink::UdpLink(int fd, const SocketAddress& peer, ev::loop_ref& loop)
 	: loop(loop), peer(peer), fd(fd)
 {
 }
@@ -42,7 +42,7 @@ UdpLink::~UdpLink()
 	}
 }
 
-UdpLink* UdpLink::connect(SocketAddress addr)
+UdpLink* UdpLink::connect(const SocketAddress& addr)
 {
 	// TODO: connect handling
 }
