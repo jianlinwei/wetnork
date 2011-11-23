@@ -63,12 +63,16 @@ class Packet {
 		off_t _offset;
 		size_t _length;
 
+		Packet(const boost::shared_array<const uint8_t>& data, off_t offset, size_t length);
+
 	public:
-		Packet(const uint8_t* data, off_t offset, size_t length);
+		Packet(uint8_t* data, off_t offset, size_t length);
 
 		const uint8_t* data() const;
 
 		size_t length() const;
+
+		Packet skip(size_t bytes) const;
 };
 
 class Channel {
