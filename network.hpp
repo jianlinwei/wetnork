@@ -77,8 +77,8 @@ class Packet {
 
 class Channel {
 	protected:
-		typedef boost::signal<void (const Channel& sender, const Packet& packet)> OnReceive;
-		typedef boost::signal<void (const Channel& sender)> OnCanSend;
+		typedef boost::signal<void (Channel& sender, const Packet& packet)> OnReceive;
+		typedef boost::signal<void (Channel& sender)> OnCanSend;
 
 	public:
 		virtual ~Channel();
@@ -92,7 +92,7 @@ class Channel {
 
 class Link {
 	protected:
-		typedef boost::signal<void (const Link& sender)> OnClosed;
+		typedef boost::signal<void (Link& sender)> OnClosed;
 
 	public:
 		virtual ~Link();
@@ -106,7 +106,7 @@ class Link {
 
 class Socket {
 	protected:
-		typedef boost::signal<void (const Socket& sender, Link* link)> OnAccept;
+		typedef boost::signal<void (Socket& sender, Link* link)> OnAccept;
 
 		Socket();
 
