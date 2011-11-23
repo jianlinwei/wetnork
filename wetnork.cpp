@@ -11,13 +11,11 @@
 
 class TunDevice *tun1, *tun2;
 
-void io_cb()
+void io_cb(TunDevice& sender, const Packet& packet)
 {
-	char buf[0x10000];
-	int len = tun1->read(buf, sizeof(buf));
-	printf("from: %s (%i)\n", strerror(errno), len);
-	len = tun2->write(buf, len);
-	printf("to: %s (%i)\n", strerror(errno), len);
+	printf("read: %lu\n", packet.length());
+	int len = tun2->write(packet);
+	printf("written: %s (%i)\n", strerror(errno), len);
 }
 
 int main(int argc, char **argv)

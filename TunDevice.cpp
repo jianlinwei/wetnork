@@ -48,14 +48,9 @@ TunDevice* TunDevice::create(const std::string& name_template, const ev::loop_re
 	return new TunDevice(fd, std::string(ifr.ifr_name), loop);
 }
 
-ssize_t TunDevice::read(char *buffer, size_t len)
+ssize_t TunDevice::write(const Packet& packet)
 {
-	return ::read(fd, buffer, len);
-}
-
-ssize_t TunDevice::write(const char *buffer, size_t len)
-{
-	return ::write(fd, buffer, len);
+	return ::write(fd, packet.data(), packet.length());
 }
 
 boost::signals::connection TunDevice::connect(TunDevice::OnCanRead::slot_function_type cb)
@@ -71,7 +66,14 @@ boost::signals::connection TunDevice::connect(TunDevice::OnCanRead::slot_functio
 
 void TunDevice::watcherEvent(ev::io& io, int revents)
 {
-	onCanRead();
+	size_t len = 65536;
+	uint8_t* buffer = new uint8_t[len];
+
+	len = ::read(fd, buffer, len);
+
+	// TODO: error handling
+
+	onCanRead(*this, Packet(buffer, 0, len));
 }
 
 TunDevice::~TunDevice()

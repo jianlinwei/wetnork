@@ -7,9 +7,11 @@
 #include <boost/utility.hpp>
 #include <boost/signal.hpp>
 
+#include "network.hpp"
+
 class TunDevice : private boost::noncopyable {
 	private:
-		typedef boost::signal<void ()> OnCanRead;
+		typedef boost::signal<void (TunDevice& sender, const Packet& packet)> OnCanRead;
 
 		const int fd;
 		const std::string _name;
@@ -28,8 +30,7 @@ class TunDevice : private boost::noncopyable {
 
 		const std::string name() const;
 
-		ssize_t read(char *buffer, size_t len);
-		ssize_t write(const char *buffer, size_t len);
+		ssize_t write(const Packet& packet);
 
 		boost::signals::connection connect(OnCanRead::slot_function_type cb);
 };
