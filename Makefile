@@ -49,7 +49,7 @@ $(BINDIR)/$(TARGET): $(OBJ) | $(BINDIR)
 	$(CXX) $(LDFLAGS) -o $@ $^
 
 clean:
-	-rm -r $(OBJDIR) $(DEP) $(TARGET)
+	-rm -r $(OBJDIR) $(BINDIR) $(DEP)
 
 distclean:
 	-rm -r $(BINDIR)
