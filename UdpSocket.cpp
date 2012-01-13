@@ -71,7 +71,7 @@ UdpSocket* UdpSocket::create(const SocketAddress& addr, ev::loop_ref& loop)
 	return new UdpSocket(fd, loop);
 }
 
-boost::signals::connection UdpSocket::listen(OnAccept::slot_function_type cb)
+boost::signals2::connection UdpSocket::listen(OnAccept::slot_function_type cb)
 {
 	return onAccept.connect(cb);
 }

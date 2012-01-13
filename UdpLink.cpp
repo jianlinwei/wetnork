@@ -73,7 +73,7 @@ UdpChannel* UdpLink::getChannel(int8_t id, bool reliable)
 	return channels[cid];
 }
 
-boost::signals::connection UdpLink::connectClosed(OnClosed::slot_function_type cb)
+boost::signals2::connection UdpLink::connectClosed(OnClosed::slot_function_type cb)
 {
 	return onClosed.connect(cb);
 }

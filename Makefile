@@ -28,7 +28,7 @@ DIRS = $(OBJDIR) $(BINDIR)
 
 LIBRARIES = gnutls
 
-LIBRARIES_WITHOUT_PKGCONFIG = -lev -lboost_signals
+LIBRARIES_WITHOUT_PKGCONFIG = -lev
 
 DEFINES = -DEV_COMPAT3=0
 
@@ -39,7 +39,6 @@ LDFLAGS += `pkg-config --libs $(LIBRARIES)` $(LIBRARIES_WITHOUT_PKGCONFIG)
 all: $(BINDIR)/$(TARGET)
 
 .depend-check:
-	@if ! pkg-config --atleast-version=1.4 libconfig; then echo "libconfig version 1.4 or newer required"; exit 1; fi
 	@if ! pkg-config --atleast-version=3 gnutls; then echo "gnutls version 3 or newer required"; exit 1; fi
 
 -include .depend-check

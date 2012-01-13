@@ -4,7 +4,7 @@
 #include <sys/socket.h>
 #include <ev++.h>
 #include <netinet/in.h>
-#include <boost/signal.hpp>
+#include <boost/signals2.hpp>
 #include <map>
 #include <stdint.h>
 #include <string>
@@ -33,9 +33,9 @@ class UdpChannel : public Channel {
 	public:
 		ssize_t send(const Packet& packet) = 0;
 
-		boost::signals::connection connectReceive(OnReceive::slot_function_type cb);
+		boost::signals2::connection connectReceive(OnReceive::slot_function_type cb);
 
-		boost::signals::connection connectCanSend(OnCanSend::slot_function_type cb);
+		boost::signals2::connection connectCanSend(OnCanSend::slot_function_type cb);
 };
 
 class UdpLink : public Link {
@@ -67,7 +67,7 @@ class UdpLink : public Link {
 
 		UdpChannel* getChannel(int8_t id, bool reliable);
 
-		boost::signals::connection connectClosed(OnClosed::slot_function_type cb);
+		boost::signals2::connection connectClosed(OnClosed::slot_function_type cb);
 
 		void close();
 };
@@ -91,7 +91,7 @@ class UdpSocket : public Socket, public boost::noncopyable {
 
 		static UdpSocket* create(const SocketAddress& addr, ev::loop_ref& loop);
 
-		boost::signals::connection listen(OnAccept::slot_function_type cb);
+		boost::signals2::connection listen(OnAccept::slot_function_type cb);
 
 		void connect(boost::function<void (UdpLink* link)> cb);
 };

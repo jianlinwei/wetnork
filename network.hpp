@@ -4,7 +4,7 @@
 #include <sys/socket.h>
 #include <ev++.h>
 #include <netinet/in.h>
-#include <boost/signal.hpp>
+#include <boost/signals2.hpp>
 #include <map>
 #include <stdint.h>
 #include <string>
@@ -77,43 +77,43 @@ class Packet {
 
 class Channel {
 	protected:
-		typedef boost::signal<void (Channel& sender, const Packet& packet)> OnReceive;
-		typedef boost::signal<void (Channel& sender)> OnCanSend;
+		typedef boost::signals2::signal<void (Channel& sender, const Packet& packet)> OnReceive;
+		typedef boost::signals2::signal<void (Channel& sender)> OnCanSend;
 
 	public:
 		virtual ~Channel();
 
 		virtual ssize_t send(const Packet& packet) = 0;
 
-		virtual boost::signals::connection connectReceive(OnReceive::slot_function_type cb) = 0;
+		virtual boost::signals2::connection connectReceive(OnReceive::slot_function_type cb) = 0;
 
-		virtual boost::signals::connection connectCanSend(OnCanSend::slot_function_type cb) = 0;
+		virtual boost::signals2::connection connectCanSend(OnCanSend::slot_function_type cb) = 0;
 };
 
 class Link {
 	protected:
-		typedef boost::signal<void (Link& sender)> OnClosed;
+		typedef boost::signals2::signal<void (Link& sender)> OnClosed;
 
 	public:
 		virtual ~Link();
 
 		virtual Channel* getChannel(int8_t id, bool reliable) = 0;
 
-		virtual boost::signals::connection connectClosed(OnClosed::slot_function_type cb) = 0;
+		virtual boost::signals2::connection connectClosed(OnClosed::slot_function_type cb) = 0;
 
 		virtual void close() = 0;
 };
 
 class Socket {
 	protected:
-		typedef boost::signal<void (Socket& sender, Link* link)> OnAccept;
+		typedef boost::signals2::signal<void (Socket& sender, Link* link)> OnAccept;
 
 		Socket();
 
 	public:
 		virtual ~Socket();
 
-		virtual boost::signals::connection listen(OnAccept::slot_function_type cb) = 0;
+		virtual boost::signals2::connection listen(OnAccept::slot_function_type cb) = 0;
 };
 
 #endif

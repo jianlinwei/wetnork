@@ -12,12 +12,12 @@ UdpChannel::UdpChannel(UdpLink& parent, uint8_t cid)
 {
 }
 
-boost::signals::connection UdpChannel::connectReceive(OnReceive::slot_function_type cb)
+boost::signals2::connection UdpChannel::connectReceive(OnReceive::slot_function_type cb)
 {
 	return onReceive.connect(cb);
 }
 
-boost::signals::connection UdpChannel::connectCanSend(OnCanSend::slot_function_type cb)
+boost::signals2::connection UdpChannel::connectCanSend(OnCanSend::slot_function_type cb)
 {
 	return onCanSend.connect(cb);
 }

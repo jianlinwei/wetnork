@@ -5,13 +5,13 @@
 #include <sys/types.h>
 #include <ev++.h>
 #include <boost/utility.hpp>
-#include <boost/signal.hpp>
+#include <boost/signals2.hpp>
 
 #include "network.hpp"
 
 class TunDevice : private boost::noncopyable {
 	private:
-		typedef boost::signal<void (TunDevice& sender, const Packet& packet)> OnCanRead;
+		typedef boost::signals2::signal<void (TunDevice& sender, const Packet& packet)> OnCanRead;
 
 		const int fd;
 		const std::string _name;
@@ -32,7 +32,7 @@ class TunDevice : private boost::noncopyable {
 
 		ssize_t write(const Packet& packet);
 
-		boost::signals::connection connect(OnCanRead::slot_function_type cb);
+		boost::signals2::connection connect(OnCanRead::slot_function_type cb);
 };
 
 #endif
