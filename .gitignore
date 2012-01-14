@@ -1,6 +1,4 @@
-*.o
 *.d
 *.swp
-wetnork
-.depend-check
-core
+obj
+bin

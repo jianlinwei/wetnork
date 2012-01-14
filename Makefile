@@ -1,59 +1,54 @@
-include functions.mk
-
 TARGET = wetnork
-
-SRC = wetnork.cpp \
-	  SocketAddress.cpp \
-	  Exception.cpp \
-	  NetworkException.cpp \
-	  BadAddress.cpp \
-	  BadSend.cpp \
-	  Packet.cpp \
-	  Socket.cpp \
-	  Channel.cpp \
-	  Link.cpp \
-	  UnreliableUdpChannel.cpp \
-	  ReliableUdpChannel.cpp \
-	  UdpChannel.cpp \
-	  UdpLink.cpp \
-	  UdpSocket.cpp \
-	  TunDevice.cpp
-
+PARTICLES = common net
 OBJDIR = obj
 BINDIR = bin
 
-DEP = $(SRC:.cpp=.d)
-OBJ = $(patsubst %.cpp,$(OBJDIR)/%.o,$(SRC))
-DIRS = $(OBJDIR) $(BINDIR)
-
 LIBRARIES = gnutls
-
 LIBRARIES_WITHOUT_PKGCONFIG = -lev
 
-DEFINES = -DEV_COMPAT3=0
+SRC = wetnork.cpp
 
-CPPFLAGS = 
-CXXFLAGS += -O2 -ansi -Wall -Wnon-virtual-dtor -pedantic $(DEFINES) `pkg-config --cflags $(LIBRARIES)`
-LDFLAGS += `pkg-config --libs $(LIBRARIES)` $(LIBRARIES_WITHOUT_PKGCONFIG)
+DEP_SRC = $(SRC)
+OBJ = $(patsubst %.cpp,$(OBJDIR)/%.o,$(SRC))
+
+DIRS = $(BINDIR) $(subst ./,,$(sort $(patsubst %,$(OBJDIR)/%,$(dir $(DEP_SRC)))))
+
+
 
 all: $(BINDIR)/$(TARGET)
+
+include $(patsubst %,%/Makefile,$(PARTICLES))
+
+DEPFILES = $(DEP_SRC:.cpp=.d)
+
+-include .depend-check
+-include $(DEPFILES)
+
+PARTICLE_LIBRARIES = $(patsubst %,-l%,$(PARTICLES))
+
+DEFINES = -DEV_COMPAT3=0
+CPPFLAGS = -I include $(DEFINES)
+CXXFLAGS += -O2 -ansi -Wall -Wnon-virtual-dtor -pedantic `pkg-config --cflags $(LIBRARIES)`
+LDFLAGS += -L $(OBJDIR) `pkg-config --libs $(LIBRARIES)` $(LIBRARIES_WITHOUT_PKGCONFIG) $(PARTICLE_LIBRARIES)
+
+
 
 .depend-check:
 	@if ! pkg-config --atleast-version=3 gnutls; then echo "gnutls version 3 or newer required"; exit 1; fi
 
--include .depend-check
--include $(DEP)
-
-$(BINDIR)/$(TARGET): $(OBJ) | $(BINDIR)
-	$(CXX) $(LDFLAGS) -o $@ $^
+$(BINDIR)/$(TARGET): $(OBJ) $(patsubst %,$(OBJDIR)/lib%.a,$(PARTICLES)) | $(BINDIR)
+	$(CXX) -o $@ $(OBJ) $(LDFLAGS)
 
 clean:
-	-rm -r $(OBJDIR) $(BINDIR) $(DEP)
+	-rm -r $(OBJDIR) $(BINDIR)
+   
+depclean:
+	-rm  $(DEPFILES)
 
 distclean:
 	-rm -r $(BINDIR)
 
-$(OBJDIR)/%.o: %.cpp | $(OBJDIR)
+$(OBJDIR)/%.o: %.cpp | $(DIRS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
 
 $(DIRS):
@@ -61,7 +56,7 @@ $(DIRS):
 
 %.d: %.cpp
 	@echo "Generating dependencies for $<"
-	$(call make-depend,$<,$(subst .d,.o,$@),$@)
+	@$(CPP) -MM -MP -MT $(OBJDIR)/$($@:.d=.o) $(CPPFLAGS) $< | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
 
 .PHONY: clean distclean $(DIRS)
 
