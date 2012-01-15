@@ -1,5 +1,5 @@
-#ifndef NETWORK_UDP_H
-#define NETWORK_UDP_H
+#ifndef NET_NETWORK_UDP_H
+#define NET_NETWORK_UDP_H
 
 #include <sys/socket.h>
 #include <ev++.h>
