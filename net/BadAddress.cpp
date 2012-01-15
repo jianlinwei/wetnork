@@ -1,6 +1,6 @@
 #include "network.hpp"
 
-BadAddress::BadAddress(const char* what)
+BadAddress::BadAddress(const std::string& what)
 	: NetworkException(what)
 {
 }

@@ -1,6 +1,6 @@
 #include "network.hpp"
 
-NetworkException::NetworkException(const char* what)
+NetworkException::NetworkException(const std::string& what)
 	: Exception(what)
 {
 }

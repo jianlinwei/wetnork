@@ -21,10 +21,8 @@ class TunDevice : private boost::noncopyable {
 
 		void watcherEvent(ev::io& io, int revents);
 
-		TunDevice(const int fd, const std::string& name, const ev::loop_ref& loop);
-
 	public:
-		static TunDevice* create(const std::string& name_template, const ev::loop_ref& loop);
+		TunDevice(const int fd, const std::string& name, const ev::loop_ref& loop);
 
 		~TunDevice();
 

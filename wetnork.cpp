@@ -8,8 +8,12 @@
 #include <ev.h>
 
 #include "tun.hpp"
+#include "host/tun.hpp"
 
-class TunDevice *tun1, *tun2;
+using namespace std;
+
+TunDevice *tun1, *tun2;
+TunRegistry reg;
 
 void io_cb(TunDevice& sender, const Packet& packet)
 {
@@ -25,10 +29,12 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	tun1 = TunDevice::create("tun-p-%d", ev_default_loop(0));
+	string tun1name = reg.createDevice("tun-p-%d");
+	tun1 = new TunDevice(reg.findDevice(tun1name), tun1name, ev_default_loop(0));
 	perror(tun1->name().c_str());
 
-	tun2 = TunDevice::create("tun-p-%d", ev_default_loop(0));
+	string tun2name = reg.createDevice("tun-p-%d");
+	tun2 = new TunDevice(reg.findDevice(tun2name), tun2name, ev_default_loop(0));
 	perror(tun2->name().c_str());
 
 	tun1->connectCanRead(io_cb);

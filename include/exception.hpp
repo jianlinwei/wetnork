@@ -2,15 +2,23 @@
 #define EXCEPTION_H
 
 #include <exception>
+#include <string>
 
 class Exception : public std::exception {
 	private:
-		const char* _what;
+		std::string _what;
 
 	public:
-		Exception(const char* what);
+		Exception(const std::string& what);
+
+		~Exception() throw();
 
 		const char* what() const throw();
+};
+
+class FileNotFound : public Exception {
+	public:
+		FileNotFound(const std::string& what);
 };
 
 #endif

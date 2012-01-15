@@ -1,5 +1,5 @@
 TARGET = wetnork
-PARTICLES = common net
+PARTICLES = net host common
 OBJDIR = obj
 BINDIR = bin
 

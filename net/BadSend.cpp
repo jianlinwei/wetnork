@@ -1,6 +1,6 @@
 #include "network.hpp"
 
-BadSend::BadSend(const char* what)
+BadSend::BadSend(const std::string& what)
 	: NetworkException(what)
 {
 }

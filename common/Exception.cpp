@@ -1,11 +1,17 @@
 #include "exception.hpp"
 
-Exception::Exception(const char* what)
+using namespace std;
+
+Exception::Exception(const string& what)
 	: _what(what)
+{
+}
+
+Exception::~Exception() throw()
 {
 }
 
 const char* Exception::what() const throw()
 {
-	return _what;
+	return _what.c_str();
 }

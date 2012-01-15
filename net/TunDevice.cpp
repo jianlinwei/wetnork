@@ -22,32 +22,6 @@ const std::string TunDevice::name() const
 	return _name;
 }
 
-TunDevice* TunDevice::create(const std::string& name_template, const ev::loop_ref& loop)
-{
-	struct ifreq ifr;
-	int fd;
-	int err;
-
-	fd = open("/dev/net/tun", O_RDWR);
-	if (fd < 0) {
-		return NULL;
-	}
-
-	memset(&ifr, 0, sizeof(ifr));
-	ifr.ifr_flags = IFF_TUN | IFF_NO_PI;
-	if (name_template.size()) {
-		strncpy(ifr.ifr_name, name_template.c_str(), IFNAMSIZ);
-	}
-
-	err = ioctl(fd, TUNSETIFF, reinterpret_cast<void*>(&ifr));
-	if (err < 0) {
-		close(fd);
-		return NULL;
-	}
-
-	return new TunDevice(fd, std::string(ifr.ifr_name), loop);
-}
-
 ssize_t TunDevice::write(const Packet& packet)
 {
 	return ::write(fd, packet.data(), packet.length());

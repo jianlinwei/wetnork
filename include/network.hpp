@@ -14,17 +14,17 @@
 
 class NetworkException : public Exception {
 	public:
-		NetworkException(const char* what);
+		explicit NetworkException(const std::string& what);
 };
 
 class BadAddress : public NetworkException {
 	public:
-		BadAddress(const char* what);
+		explicit BadAddress(const std::string& what);
 };
 
 class BadSend : public NetworkException {
 	public:
-		BadSend(const char* what);
+		explicit BadSend(const std::string& what);
 };
 
 struct SocketAddress {
