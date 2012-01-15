@@ -1,7 +1,7 @@
 TARGET = wetnork
 PARTICLES = common net
-OBJDIR = $(CURDIR)/obj
-BINDIR = $(CURDIR)/bin
+OBJDIR = obj
+BINDIR = bin
 
 LIBRARIES = gnutls
 LIBRARIES_WITHOUT_PKGCONFIG = -lev
@@ -21,6 +21,8 @@ endif
 
 
 all: $(BINDIR)/$(TARGET)
+
+deps:
 
 include $(patsubst %,%/Makefile,$(PARTICLES))
 
@@ -63,7 +65,7 @@ $(DIRS):
 
 %.d: %.cpp
 	@echo -e "[DEP]\t" $<
-	$(SILENT)$(CPP) -MM -MP -MT $(OBJDIR)/$($@:.d=.o) $(CPPFLAGS) $< | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
+	$(SILENT)$(CPP) -MM -MP -MT $(OBJDIR)/$(@:.d=.o) $(CPPFLAGS) $< | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
 
-.PHONY: clean distclean $(DIRS)
+.PHONY: clean distclean $(DIRS) deps
 
