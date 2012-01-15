@@ -7,4 +7,5 @@ net_OBJ = $(patsubst %.cpp,$(OBJDIR)/%.o,$(net_SRC))
 DEP_SRC += $(net_SRC)
 
 $(OBJDIR)/libnet.a: $(net_OBJ)
-	$(AR) -rcs $@ $^
+	@echo -e "[AR]\t" $@
+	$(SILENT)$(AR) -rcs $@ $^

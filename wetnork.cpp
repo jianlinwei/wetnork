@@ -31,7 +31,7 @@ int main(int argc, char **argv)
 	tun2 = TunDevice::create("tun-p-%d", ev_default_loop(0));
 	perror(tun2->name().c_str());
 
-	tun1->connect(io_cb);
+	tun1->connectCanRead(io_cb);
 
 	ev_run(ev_default_loop(0), 0);
 

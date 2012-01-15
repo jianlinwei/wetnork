@@ -1,7 +1,7 @@
 TARGET = wetnork
 PARTICLES = common net
-OBJDIR = obj
-BINDIR = bin
+OBJDIR = $(CURDIR)/obj
+BINDIR = $(CURDIR)/bin
 
 LIBRARIES = gnutls
 LIBRARIES_WITHOUT_PKGCONFIG = -lev
@@ -13,6 +13,11 @@ OBJ = $(patsubst %.cpp,$(OBJDIR)/%.o,$(SRC))
 
 DIRS = $(BINDIR) $(subst ./,,$(sort $(patsubst %,$(OBJDIR)/%,$(dir $(DEP_SRC)))))
 
+ifdef V
+	SILENT = 
+else
+	SILENT = @
+endif
 
 
 all: $(BINDIR)/$(TARGET)
@@ -37,26 +42,28 @@ LDFLAGS += -L $(OBJDIR) `pkg-config --libs $(LIBRARIES)` $(LIBRARIES_WITHOUT_PKG
 	@if ! pkg-config --atleast-version=3 gnutls; then echo "gnutls version 3 or newer required"; exit 1; fi
 
 $(BINDIR)/$(TARGET): $(OBJ) $(patsubst %,$(OBJDIR)/lib%.a,$(PARTICLES)) | $(BINDIR)
-	$(CXX) -o $@ $(OBJ) $(LDFLAGS)
+	@echo -e "[LD]\t" $@
+	$(SILENT)$(CXX) -o $@ $(OBJ) $(LDFLAGS)
 
 clean:
-	-rm -r $(OBJDIR) $(BINDIR)
+	-$(RM) -r $(OBJDIR) $(BINDIR)
    
 depclean:
-	-rm  $(DEPFILES)
+	-$(RM)  $(DEPFILES)
 
 distclean:
-	-rm -r $(BINDIR)
+	-$(RM) -r $(BINDIR)
 
 $(OBJDIR)/%.o: %.cpp | $(DIRS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
+	@echo -e "[CC]\t" $<
+	$(SILENT)$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
 
 $(DIRS):
 	@mkdir -p $@
 
 %.d: %.cpp
-	@echo "Generating dependencies for $<"
-	@$(CPP) -MM -MP -MT $(OBJDIR)/$($@:.d=.o) $(CPPFLAGS) $< | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
+	@echo -e "[DEP]\t" $<
+	$(SILENT)$(CPP) -MM -MP -MT $(OBJDIR)/$($@:.d=.o) $(CPPFLAGS) $< | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
 
 .PHONY: clean distclean $(DIRS)
 

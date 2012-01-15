@@ -7,4 +7,5 @@ common_OBJ = $(patsubst %.cpp,$(OBJDIR)/%.o,$(common_SRC))
 DEP_SRC += $(common_SRC)
 
 $(OBJDIR)/libcommon.a: $(common_OBJ)
-	$(AR) -rcs $@ $^
+	@echo -e "[AR]\t" $@
+	$(SILENT)$(AR) -rcs $@ $^
