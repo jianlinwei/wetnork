@@ -92,8 +92,6 @@ class UdpSocket : public Socket, public boost::noncopyable {
 		static UdpSocket* create(const SocketAddress& addr, ev::loop_ref& loop);
 
 		boost::signals2::connection listen(OnAccept::slot_function_type cb);
-
-		void connect(boost::function<void (UdpLink* link)> cb);
 };
 
 #endif
