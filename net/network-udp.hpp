@@ -46,10 +46,11 @@ class UdpLink : public Link {
 	private:
 		typedef std::map<uint8_t, UdpChannel*> channel_map;
 
-		OnClosed onClosed;
 		channel_map channels;
 		ev::loop_ref& loop;
 		SocketAddress peer;
+
+		void connect(const SocketAddress* local, const SocketAddress& peer);
 
 	protected:
 		int fd;
@@ -61,13 +62,12 @@ class UdpLink : public Link {
 		ssize_t send(const msghdr* msg, int flags);
 
 	public:
+		UdpLink(const SocketAddress& peer, ev::loop_ref& loop);
+		UdpLink(const SocketAddress& local, const SocketAddress& peer, ev::loop_ref& loop);
+
 		~UdpLink();
 
-		static UdpLink* connect(const SocketAddress& addr);
-
 		UdpChannel* getChannel(int8_t id, bool reliable);
-
-		boost::signals2::connection connectClosed(OnClosed::slot_function_type cb);
 
 		void close();
 };

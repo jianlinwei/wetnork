@@ -21,4 +21,10 @@ class FileNotFound : public Exception {
 		FileNotFound(const std::string& what);
 };
 
+
+class InvalidOperation : public Exception {
+	public:
+		InvalidOperation(const std::string& what);
+};
+
 #endif

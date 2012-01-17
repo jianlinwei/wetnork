@@ -35,8 +35,8 @@ PARTICLE_LIBRARIES = $(patsubst %,-l%,$(PARTICLES))
 
 DEFINES = -DEV_COMPAT3=0
 CPPFLAGS = -I include $(DEFINES)
-CXXFLAGS += -O2 -ansi -Wall -Wnon-virtual-dtor -pedantic `pkg-config --cflags $(LIBRARIES)`
-LDFLAGS += -L $(OBJDIR) `pkg-config --libs $(LIBRARIES)` $(LIBRARIES_WITHOUT_PKGCONFIG) $(PARTICLE_LIBRARIES)
+CXXFLAGS += -O2 -std=c++11 -fPIC -Wall -Wnon-virtual-dtor -pedantic `pkg-config --cflags $(LIBRARIES)`
+LDFLAGS += -L $(OBJDIR) `pkg-config --libs $(LIBRARIES)` $(LIBRARIES_WITHOUT_PKGCONFIG) $(PARTICLE_LIBRARIES) -pie
 
 
 

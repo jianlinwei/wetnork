@@ -90,16 +90,31 @@ class Channel {
 		virtual boost::signals2::connection connectCanSend(OnCanSend::slot_function_type cb) = 0;
 };
 
+enum class LinkState {
+	Invalid,
+	Opening,
+	Open,
+	Closing,
+	Closed
+};
+
 class Link {
 	protected:
-		typedef boost::signals2::signal<void (Link& sender)> OnClosed;
+		typedef boost::signals2::signal<void (Link& sender, LinkState state)> OnStateChanged;
+
+		LinkState _state;
+		OnStateChanged onStateChanged;
+
+		virtual void setState(LinkState state);
 
 	public:
 		virtual ~Link();
 
+		virtual LinkState state() const;
+
 		virtual Channel* getChannel(int8_t id, bool reliable) = 0;
 
-		virtual boost::signals2::connection connectClosed(OnClosed::slot_function_type cb) = 0;
+		virtual boost::signals2::connection connectStateChanged(OnStateChanged::slot_function_type cb) = 0;
 
 		virtual void close() = 0;
 };
