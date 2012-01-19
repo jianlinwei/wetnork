@@ -1,14 +1,15 @@
+#include "network.hpp"
+
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <stdexcept>
+#include <string.h>
+#include <arpa/inet.h>
 
-#include "network.hpp"
-
-SocketAddress::SocketAddress()
-{
-}
+using namespace std;
 
 int SocketAddress::family() const
 {
@@ -39,33 +40,31 @@ SocketAddress::SocketAddress(const sockaddr* addr)
 			break;
 
 		default:
-			throw BadAddress("Unsupported address family");
+			throw invalid_argument("Unsupported address family");
 	}
 
 	memcpy(&this->addr, addr, len);
 }
 
-SocketAddress SocketAddress::parse(const std::string& addr, in_port_t port)
+SocketAddress SocketAddress::parse(const std::string& s, in_port_t port)
 {
-	SocketAddress result;
-
-	memset(&result, 0, sizeof(result));
-
-	if (addr.find(':') < addr.size()) {
-		result.len = sizeof(sockaddr_in6);
-		if (inet_pton(AF_INET6, addr.c_str(), &result.addr.in6.sin6_addr) < 0) {
-			throw BadAddress("Cannot parse IP address");
+	if (s.find(':') != -1) {
+		sockaddr_in6 addr;
+		memset(&addr, 0, sizeof(addr));
+		if (inet_pton(AF_INET6, s.c_str(), &addr.sin6_addr) < 0) {
+			throw invalid_argument(string("Cannot parse IP address: ") + strerror(errno));
 		}
-		result.addr.in6.sin6_port = htons(port);
+		addr.sin6_port = htons(port);
+		return SocketAddress(reinterpret_cast<sockaddr*>(&addr));
 	} else {
-		result.len = sizeof(sockaddr_in);
-		if (inet_pton(AF_INET, addr.c_str(), &result.addr.in.sin_addr) < 0) {
-			throw BadAddress("Cannot parse IP address");
+		sockaddr_in addr;
+		memset(&addr, 0, sizeof(addr));
+		if (inet_pton(AF_INET, s.c_str(), &addr.sin_addr) < 0) {
+			throw invalid_argument(string("Cannot parse IP address: ") + strerror(errno));
 		}
-		result.addr.in.sin_port = htons(port);
+		addr.sin_port = htons(port);
+		return SocketAddress(reinterpret_cast<sockaddr*>(&addr));
 	}
-
-	return result;
 }
 
 bool SocketAddress::operator<(const SocketAddress& other) const

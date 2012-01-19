@@ -7,7 +7,7 @@
 #include <errno.h>
 #include <ev.h>
 
-#include "tun.hpp"
+#include "net/tun.hpp"
 #include "host/tun.hpp"
 
 using namespace std;
