@@ -1,6 +1,9 @@
 TARGET = wetnork
 PARTICLES = net host common
 
+ifeq "$(origin CXX)" "default"
+	CXX = clang++
+endif
 ifndef OBJDIR
 	OBJDIR = obj
 endif
