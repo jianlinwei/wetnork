@@ -1,12 +1,12 @@
+#include "network.hpp"
+#include "network-udp-internal.hpp"
+
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <errno.h>
-
-#include "network.hpp"
-#include "network-udp-internal.hpp"
 
 using namespace std;
 
@@ -111,7 +111,3 @@ const SocketAddress& UdpSocket::address() const
 	return _address;
 }
 
-SignalConnection UdpSocket::listen(OnAccept::slot_function_type cb)
-{
-	return onAccept.connect(cb);
-}

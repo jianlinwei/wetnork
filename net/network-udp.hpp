@@ -29,13 +29,6 @@ class UdpChannel : public Channel {
 		UdpChannel(UdpLink& parent, uint8_t cid);
 
 		virtual void propagate(const Packet& packet) = 0;
-
-	public:
-		ssize_t send(const Packet& packet) = 0;
-
-		SignalConnection connectReceive(OnReceive::slot_function_type cb);
-
-		SignalConnection connectCanSend(OnCanSend::slot_function_type cb);
 };
 
 class UdpLink : public Link {
@@ -92,8 +85,6 @@ class UdpSocket : public Socket, public boost::noncopyable {
 		UdpLink* connect(const SocketAddress& peer) override;
 
 		const SocketAddress& address() const override;
-
-		SignalConnection listen(OnAccept::slot_function_type cb) override;
 };
 
 #endif

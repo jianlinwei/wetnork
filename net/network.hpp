@@ -70,14 +70,17 @@ class Channel {
 		typedef Signal<void (Channel& sender, const Packet& packet)> OnReceive;
 		typedef Signal<void (Channel& sender)> OnCanSend;
 
+		OnReceive receive;
+		OnCanSend canSend;
+
 	public:
 		virtual ~Channel();
 
 		virtual ssize_t send(const Packet& packet) = 0;
 
-		virtual SignalConnection connectReceive(OnReceive::slot_function_type cb) = 0;
+		virtual SignalConnection connectReceive(OnReceive::slot_function_type cb);
 
-		virtual SignalConnection connectCanSend(OnCanSend::slot_function_type cb) = 0;
+		virtual SignalConnection connectCanSend(OnCanSend::slot_function_type cb);
 };
 
 enum class LinkState {
@@ -93,7 +96,7 @@ class Link {
 		typedef Signal<void (Link& sender, LinkState state)> OnStateChanged;
 
 		LinkState _state;
-		OnStateChanged onStateChanged;
+		OnStateChanged stateChanged;
 
 		virtual void setState(LinkState state);
 
@@ -104,7 +107,7 @@ class Link {
 
 		virtual Channel* getChannel(int8_t id, bool reliable) = 0;
 
-		virtual SignalConnection connectStateChanged(OnStateChanged::slot_function_type cb) = 0;
+		virtual SignalConnection connectStateChanged(OnStateChanged::slot_function_type cb);
 
 		virtual void close() = 0;
 };
@@ -112,6 +115,8 @@ class Link {
 class Socket {
 	protected:
 		typedef Signal<void (Socket& sender, Link* link)> OnAccept;
+
+		OnAccept accept;
 
 		Socket();
 
@@ -122,7 +127,7 @@ class Socket {
 
 		virtual const SocketAddress& address() const = 0;
 
-		virtual SignalConnection listen(OnAccept::slot_function_type cb) = 0;
+		virtual SignalConnection listen(OnAccept::slot_function_type cb);
 };
 
 #endif
