@@ -8,6 +8,8 @@
 #include "network.hpp"
 #include "network-udp-internal.hpp"
 
+using namespace std;
+
 struct ReliableUdpPacketHeader {
 	private:
 		typedef struct {
@@ -78,7 +80,7 @@ void ReliableUdpChannel::transmitPacket(const Packet& packet)
 
 	int result = parent.send(&msg);
 	if (result < packet.length() + ReliableUdpPacketHeader::size) {
-		throw BadSend(strerror(errno));
+		throw SocketException(errno, string("Could not send packet: ") + strerror(errno));
 	}
 }
 

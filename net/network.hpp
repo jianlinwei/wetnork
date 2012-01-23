@@ -24,21 +24,6 @@ class SocketException : public Exception {
 		int number() const;
 };
 
-class NetworkException : public Exception {
-	public:
-		explicit NetworkException(const std::string& what);
-};
-
-class BadAddress : public NetworkException {
-	public:
-		explicit BadAddress(const std::string& what);
-};
-
-class BadSend : public NetworkException {
-	public:
-		explicit BadSend(const std::string& what);
-};
-
 
 
 

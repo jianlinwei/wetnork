@@ -8,6 +8,8 @@
 #include "network.hpp"
 #include "network-udp-internal.hpp"
 
+using namespace std;
+
 struct UnreliableUdpPacketHeader {
 	private:
 		uint8_t _cid;
@@ -49,7 +51,7 @@ ssize_t UnreliableUdpChannel::send(const Packet& packet)
 
 	int result = parent.send(&msg);
 	if (result < packet.length() + UnreliableUdpPacketHeader::size) {
-		throw BadSend(strerror(errno));
+		throw SocketException(errno, string("Could not send packet: ") + strerror(errno));
 	}
 
 	return true;
