@@ -69,7 +69,6 @@ class UdpSocket : public Socket, public boost::noncopyable {
 		int fd;
 		ev::io watcher;
 		peers_map peers;
-		OnAccept onAccept;
 		ev::loop_ref& loop;
 		SocketAddress _address;
 

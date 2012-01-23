@@ -50,12 +50,8 @@ void UdpSocket::onPacketArrived(ev::io& io, int revents)
 	SocketAddress s_addr(reinterpret_cast<sockaddr*>(&addr));
 
 	if (peers.count(s_addr) == 0) {
-		if (onAccept.num_slots()) {
+		if (!accept.empty()) {
 			// TODO: accept connections
-		} else {
-			// drop packets nobody wants
-			read(fd, nullptr, 0);
-			return;
 		}
 	} else {
 		UdpLink* link = peers[s_addr];
