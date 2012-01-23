@@ -33,9 +33,9 @@ class UdpChannel : public Channel {
 	public:
 		ssize_t send(const Packet& packet) = 0;
 
-		boost::signals2::connection connectReceive(OnReceive::slot_function_type cb);
+		SignalConnection connectReceive(OnReceive::slot_function_type cb);
 
-		boost::signals2::connection connectCanSend(OnCanSend::slot_function_type cb);
+		SignalConnection connectCanSend(OnCanSend::slot_function_type cb);
 };
 
 class UdpLink : public Link {
@@ -50,8 +50,6 @@ class UdpLink : public Link {
 		ev::loop_ref& loop;
 		SocketAddress peer;
 
-		void connect(const SocketAddress* local, const SocketAddress& peer);
-
 	protected:
 		int fd;
 
@@ -62,14 +60,11 @@ class UdpLink : public Link {
 		ssize_t send(const msghdr* msg, int flags);
 
 	public:
-		UdpLink(const SocketAddress& peer, ev::loop_ref& loop);
-		UdpLink(const SocketAddress& local, const SocketAddress& peer, ev::loop_ref& loop);
+		~UdpLink() override;
 
-		~UdpLink();
+		UdpChannel* getChannel(int8_t id, bool reliable) override;
 
-		UdpChannel* getChannel(int8_t id, bool reliable);
-
-		void close();
+		void close() override;
 };
 
 class UdpSocket : public Socket, public boost::noncopyable {
@@ -87,11 +82,13 @@ class UdpSocket : public Socket, public boost::noncopyable {
 		UdpSocket(int fd, ev::loop_ref& loop);
 
 	public:
-		~UdpSocket();
+		~UdpSocket() override;
 
 		static UdpSocket* create(const SocketAddress& addr, ev::loop_ref& loop);
 
-		boost::signals2::connection listen(OnAccept::slot_function_type cb);
+		UdpLink* connect(const SocketAddress& peer) override;
+
+		SignalConnection listen(OnAccept::slot_function_type cb) override;
 };
 
 #endif

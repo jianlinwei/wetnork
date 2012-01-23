@@ -11,7 +11,7 @@
 
 class TunDevice : private boost::noncopyable {
 	private:
-		typedef boost::signals2::signal<void (TunDevice& sender, const Packet& packet)> OnCanRead;
+		typedef Signal<void (TunDevice& sender, const Packet& packet)> OnCanRead;
 
 		const int fd;
 		const std::string _name;
@@ -30,7 +30,7 @@ class TunDevice : private boost::noncopyable {
 
 		ssize_t write(const Packet& packet);
 
-		boost::signals2::connection connectCanRead(OnCanRead::slot_function_type cb);
+		SignalConnection connectCanRead(OnCanRead::slot_function_type cb);
 };
 
 #endif

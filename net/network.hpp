@@ -2,17 +2,27 @@
 #define NET_NETWORK_H
 
 #include "exception.hpp"
+#include "signal.hpp"
 #include "../include/network.hpp"
 
 #include <sys/socket.h>
 #include <ev++.h>
 #include <netinet/in.h>
-#include <boost/signals2.hpp>
 #include <map>
 #include <stdint.h>
 #include <string>
 #include <arpa/inet.h>
 #include <boost/shared_array.hpp>
+
+class SocketException : public Exception {
+	private:
+		int _number;
+
+	public:
+		SocketException(int number, const std::string& what);
+
+		int number() const;
+};
 
 class NetworkException : public Exception {
 	public:
@@ -52,19 +62,22 @@ class Packet {
 		Packet skip(size_t bytes) const;
 };
 
+
+
+
 class Channel {
 	protected:
-		typedef boost::signals2::signal<void (Channel& sender, const Packet& packet)> OnReceive;
-		typedef boost::signals2::signal<void (Channel& sender)> OnCanSend;
+		typedef Signal<void (Channel& sender, const Packet& packet)> OnReceive;
+		typedef Signal<void (Channel& sender)> OnCanSend;
 
 	public:
 		virtual ~Channel();
 
 		virtual ssize_t send(const Packet& packet) = 0;
 
-		virtual boost::signals2::connection connectReceive(OnReceive::slot_function_type cb) = 0;
+		virtual SignalConnection connectReceive(OnReceive::slot_function_type cb) = 0;
 
-		virtual boost::signals2::connection connectCanSend(OnCanSend::slot_function_type cb) = 0;
+		virtual SignalConnection connectCanSend(OnCanSend::slot_function_type cb) = 0;
 };
 
 enum class LinkState {
@@ -98,14 +111,16 @@ class Link {
 
 class Socket {
 	protected:
-		typedef boost::signals2::signal<void (Socket& sender, Link* link)> OnAccept;
+		typedef Signal<void (Socket& sender, Link* link)> OnAccept;
 
 		Socket();
 
 	public:
 		virtual ~Socket();
 
-		virtual boost::signals2::connection listen(OnAccept::slot_function_type cb) = 0;
+		virtual Link* connect(const SocketAddress& peer);
+
+		virtual SignalConnection listen(OnAccept::slot_function_type cb) = 0;
 };
 
 #endif

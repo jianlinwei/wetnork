@@ -8,6 +8,8 @@
 #include "network.hpp"
 #include "network-udp-internal.hpp"
 
+using namespace std;
+
 UdpSocket::UdpSocket(int fd, ev::loop_ref& loop)
 	: fd(fd), watcher(loop), loop(loop)
 {
@@ -59,19 +61,24 @@ UdpSocket* UdpSocket::create(const SocketAddress& addr, ev::loop_ref& loop)
 	int fd = socket(addr.family(), SOCK_DGRAM, IPPROTO_UDP);
 
 	if (fd < 0) {
-		return NULL;
+		throw SocketException(errno, string("Could not open socket: ") + strerror(errno));
 	}
 
 	int err = bind(fd, addr.native(), addr.native_len());
 	if (err < 0) {
 		close(fd);
-		throw BadAddress(strerror(errno));
+		throw SocketException(errno, string("Could not bind: ") + strerror(errno));
 	}
 
 	return new UdpSocket(fd, loop);
 }
 
-boost::signals2::connection UdpSocket::listen(OnAccept::slot_function_type cb)
+UdpLink* UdpSocket::connect(const SocketAddress& peer)
+{
+	// TODO: connect handling
+}
+
+SignalConnection UdpSocket::listen(OnAccept::slot_function_type cb)
 {
 	return onAccept.connect(cb);
 }

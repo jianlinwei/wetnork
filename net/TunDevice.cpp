@@ -27,9 +27,9 @@ ssize_t TunDevice::write(const Packet& packet)
 	return ::write(fd, packet.data(), packet.length());
 }
 
-boost::signals2::connection TunDevice::connectCanRead(TunDevice::OnCanRead::slot_function_type cb)
+SignalConnection TunDevice::connectCanRead(TunDevice::OnCanRead::slot_function_type cb)
 {
-	boost::signals2::connection result = onCanRead.connect(cb);
+	SignalConnection result = onCanRead.connect(cb);
 
 	if (onCanRead.num_slots() == 1) {
 		watcher.start(fd, ev::READ);
