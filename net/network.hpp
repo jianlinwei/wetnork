@@ -90,7 +90,7 @@ enum class LinkState {
 
 class Link {
 	protected:
-		typedef boost::signals2::signal<void (Link& sender, LinkState state)> OnStateChanged;
+		typedef Signal<void (Link& sender, LinkState state)> OnStateChanged;
 
 		LinkState _state;
 		OnStateChanged onStateChanged;
@@ -104,7 +104,7 @@ class Link {
 
 		virtual Channel* getChannel(int8_t id, bool reliable) = 0;
 
-		virtual boost::signals2::connection connectStateChanged(OnStateChanged::slot_function_type cb) = 0;
+		virtual SignalConnection connectStateChanged(OnStateChanged::slot_function_type cb) = 0;
 
 		virtual void close() = 0;
 };
@@ -119,6 +119,8 @@ class Socket {
 		virtual ~Socket();
 
 		virtual Link* connect(const SocketAddress& peer);
+
+		virtual const SocketAddress& address() const = 0;
 
 		virtual SignalConnection listen(OnAccept::slot_function_type cb) = 0;
 };

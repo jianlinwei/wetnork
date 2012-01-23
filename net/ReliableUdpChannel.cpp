@@ -76,7 +76,7 @@ void ReliableUdpChannel::transmitPacket(const Packet& packet)
 	msg.msg_iov = iov;
 	msg.msg_iovlen = 2;
 
-	int result = parent.send(&msg, 0);
+	int result = parent.send(&msg);
 	if (result < packet.length() + ReliableUdpPacketHeader::size) {
 		throw BadSend(strerror(errno));
 	}
@@ -122,7 +122,7 @@ void ReliableUdpChannel::propagate(const Packet& packet)
 		msg.msg_iov = iov;
 		msg.msg_iovlen = 1;
 
-		parent.send(&msg, 0);
+		parent.send(&msg);
 	}
 }
 

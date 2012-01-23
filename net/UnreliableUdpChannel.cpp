@@ -47,7 +47,7 @@ ssize_t UnreliableUdpChannel::send(const Packet& packet)
 	msg.msg_iov = iov;
 	msg.msg_iovlen = 2;
 
-	int result = parent.send(&msg, 0);
+	int result = parent.send(&msg);
 	if (result < packet.length() + UnreliableUdpPacketHeader::size) {
 		throw BadSend(strerror(errno));
 	}

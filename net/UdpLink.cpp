@@ -5,6 +5,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <stdexcept>
 
 #include "network.hpp"
 #include "network-udp-internal.hpp"
@@ -17,27 +18,16 @@ UdpLink::UdpLink(int fd, const SocketAddress& peer, ev::loop_ref& loop)
 	_state = LinkState::Open;
 }
 
-void UdpLink::onReceive(size_t size)
+void UdpLink::propagatePacket(const Packet& packet)
 {
-	if (size < 1) {
-		// TODO: error handling
+	if (packet.length() == 0) {
+		throw InvalidOperation("Packet too short");
 	}
 
-	uint8_t* buffer = new uint8_t[size];
+	uint8_t channel = packet.data()[0];
+	bool reliableChannel = !!(channel & 0x80);
 
-	int err = read(fd, buffer, size);
-	if (err < 0) {
-		// TODO: error handling
-	}
-
-	uint8_t channel = buffer[0];
-	Packet packet(buffer, 0, size);
-
-	if (channel & 0x80) {
-		getChannel(channel & ~0x80, true)->propagate(packet);
-	} else {
-		getChannel(channel, false)->propagate(packet);
-	}
+	getChannel(channel & ~0x80, reliableChannel)->propagate(packet.skip(1));
 }
 
 UdpLink::~UdpLink()
@@ -47,19 +37,21 @@ UdpLink::~UdpLink()
 	}
 }
 
-ssize_t UdpLink::send(const msghdr* msg, int flags)
+ssize_t UdpLink::send(const msghdr* msg)
 {
+	SocketAddress peer = this->peer;
+
 	msghdr actual = *msg;
 	actual.msg_name = const_cast<sockaddr*>(peer.native());
 	actual.msg_namelen = peer.native_len();
 
-	return sendmsg(fd, &actual, flags);
+	return sendmsg(fd, &actual, MSG_DONTWAIT);
 }
 
 UdpChannel* UdpLink::getChannel(int8_t id, bool reliable)
 {
 	if (id < 0) {
-		// TODO: error handling
+		throw invalid_argument("id");
 	}
 
 	uint8_t cid = (reliable ? 0x80 : 0) | id;
