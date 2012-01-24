@@ -4,6 +4,8 @@
 #include "exception.hpp"
 #include "signal.hpp"
 #include "../include/network.hpp"
+#include "network-common.hpp"
+#include "crypto.hpp"
 
 #include <sys/socket.h>
 #include <ev++.h>
@@ -25,27 +27,6 @@ class SocketException : public Exception {
 };
 
 
-
-
-
-
-class Packet {
-	private:
-		boost::shared_array<const uint8_t> _data;
-		off_t _offset;
-		size_t _length;
-
-		Packet(const boost::shared_array<const uint8_t>& data, off_t offset, size_t length);
-
-	public:
-		Packet(uint8_t* data, off_t offset, size_t length);
-
-		const uint8_t* data() const;
-
-		size_t length() const;
-
-		Packet skip(size_t bytes) const;
-};
 
 
 
@@ -78,7 +59,7 @@ enum class LinkState {
 
 class Link {
 	protected:
-		typedef Signal<void (Link& sender, LinkState state)> OnStateChanged;
+		typedef Signal<void (Link& sender, LinkState oldState)> OnStateChanged;
 
 		LinkState _state;
 		OnStateChanged stateChanged;
