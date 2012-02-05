@@ -2,3 +2,4 @@
 *.swp
 obj
 bin
+dir.mk
