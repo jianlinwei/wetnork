@@ -27,7 +27,7 @@ LIBRARIES_WITHOUT_PKGCONFIG = ev
 
 # library version requirements
 define LIBRARY_VERSION_CHECK =
-	if ! pkg-config --atleast-version=3 gnutls; then echo "gnutls version 3 or newer required"; exit 1; fi
+	if ! pkg-config --atleast-version=3.0.13 gnutls; then echo "gnutls version 3.0.13 or newer required"; exit 1; fi
 endef
 
 
