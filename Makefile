@@ -82,10 +82,9 @@ all: $(TARGET_EXECUTABLES)
 
 deps:
 
-DEPFILES = $(DEP_SRC:.cpp=.d)
-
 ifdef DEPEND_CHECK_DONE
 -include $(PARTICLE_MAKEFILES)
+DEPFILES = $(DEP_SRC:.cpp=.d)
 -include $(DEPFILES)
 endif
 
