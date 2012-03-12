@@ -57,4 +57,6 @@ KeyFingerprint& KeyFingerprint::operator=(const KeyFingerprint& other)
 {
 	delete[] _data;
 	set(other._data, other._length);
+
+	return *this;
 }
