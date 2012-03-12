@@ -42,7 +42,7 @@ string TunRegistry::createDevice(const string& nameTemplate)
 	err = ioctl(fd, TUNSETIFF, reinterpret_cast<void*>(&ifr));
 	if (err < 0) {
 		close(fd);
-		throw Exception(string("Could not ioctl() tun: ") + strerror(errno));
+		throw InvalidOperation(string("Could not ioctl() tun: ") + strerror(errno));
 	}
 
 	result = ifr.ifr_name;
