@@ -50,7 +50,8 @@ ssize_t UnreliableUdpChannel::send(const Packet& packet)
 	msg.msg_iovlen = 2;
 
 	int result = parent.send(&msg);
-	if (result < packet.length() + UnreliableUdpPacketHeader::size) {
+	if (result < packet.length() + UnreliableUdpPacketHeader::size
+			&& !(result == -1 && errno == EAGAIN)) {
 		throw SocketException(errno, string("Could not send packet: ") + strerror(errno));
 	}
 

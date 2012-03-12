@@ -79,7 +79,8 @@ void ReliableUdpChannel::transmitPacket(const Packet& packet)
 	msg.msg_iovlen = 2;
 
 	int result = parent.send(&msg);
-	if (result < packet.length() + ReliableUdpPacketHeader::size) {
+	if (result < packet.length() + ReliableUdpPacketHeader::size
+			&& !(result == -1 && errno == EAGAIN)) {
 		throw SocketException(errno, string("Could not send packet: ") + strerror(errno));
 	}
 }
