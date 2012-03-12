@@ -49,27 +49,29 @@ class Channel {
 		virtual SignalConnection connectCanSend(OnCanSend::slot_function_type cb);
 };
 
-enum class LinkState {
-	Invalid,
-	Opening,
-	Open,
-	Closing,
-	Closed
-};
 
 class Link {
-	protected:
-		typedef Signal<void (Link& sender, LinkState oldState)> OnStateChanged;
+	public:
+		enum class State {
+			Invalid,
+			Opening,
+			Open,
+			Closing,
+			Closed
+		};
 
-		LinkState _state;
+	protected:
+		typedef Signal<void (Link& sender, State oldState)> OnStateChanged;
+
+		State _state;
 		OnStateChanged stateChanged;
 
-		virtual void setState(LinkState state);
+		virtual void setState(State state);
 
 	public:
 		virtual ~Link();
 
-		virtual LinkState state() const;
+		virtual State state() const;
 
 		virtual Channel* getChannel(int8_t id, bool reliable) = 0;
 

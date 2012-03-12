@@ -59,6 +59,7 @@ class CryptoSession : private boost::noncopyable {
 			Closed,
 			Aborted
 		};
+
 	private:
 		// non-fatal errors:
 		// AGAIN, REHANDSHAKE, WARNING_ALERT_RECEIVED

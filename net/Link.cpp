@@ -4,7 +4,7 @@ Link::~Link()
 {
 }
 
-void Link::setState(LinkState state)
+void Link::setState(State state)
 {
 	this->_state = state;
 	stateChanged(*this, state);
@@ -19,7 +19,7 @@ SignalConnection Link::connectStateChanged(OnStateChanged::slot_function_type cb
 	return stateChanged.connect(cb);
 }
 
-LinkState Link::state() const
+Link::State Link::state() const
 {
 	return _state;
 }

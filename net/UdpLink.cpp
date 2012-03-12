@@ -15,7 +15,7 @@ using namespace std;
 UdpLink::UdpLink(int fd, const SocketAddress& peer, ev::loop_ref& loop)
 	: loop(loop), peer(peer), fd(fd)
 {
-	_state = LinkState::Open;
+	_state = State::Open;
 }
 
 void UdpLink::propagatePacket(const Packet& packet)
