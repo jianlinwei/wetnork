@@ -12,10 +12,6 @@ void Link::setState(State state)
 
 bs2::connection Link::connectStateChanged(OnStateChanged::slot_function_type cb)
 {
-	if (!stateChanged.empty()) {
-		throw InvalidOperation("StateChanged already connected");
-	}
-
 	return stateChanged.connect(cb);
 }
 
