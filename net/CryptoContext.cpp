@@ -71,21 +71,24 @@ int CryptoContext::gnutls_certificate_verify(gnutls_session_t session)
 	}
 
 	gnutls_openpgp_crt_t cert;
+	int result = 0;
 
 	if (gnutls_openpgp_crt_init(&cert)) {
 		return 1;
 	}
 	if (gnutls_openpgp_crt_import(cert, peerCert, GNUTLS_OPENPGP_FMT_RAW)) {
-		return 1;
+		result = 1;
 	}
 
-	char fpr[128];
-	size_t fprLen = sizeof(fpr);
-	int result;
-	if (gnutls_openpgp_crt_get_fingerprint(cert, fpr, &fprLen)) {
-		result = 1;
-	} else {
-		result = context._permissiblePeers.count(KeyFingerprint(fpr, fprLen)) ? 0 : 1;
+	if (!result) {
+		char fpr[128];
+		size_t fprLen = sizeof(fpr);
+		int result;
+		if (gnutls_openpgp_crt_get_fingerprint(cert, fpr, &fprLen)) {
+			result = 1;
+		} else {
+			result = context._permissiblePeers.count(KeyFingerprint(fpr, fprLen)) ? 0 : 1;
+		}
 	}
 
 	gnutls_openpgp_crt_deinit(cert);
