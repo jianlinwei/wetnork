@@ -106,12 +106,12 @@ void ReliableUdpChannel::propagate(const Packet& packet)
 		delete inFlightPacket;
 		inFlightPacket = NULL;
 
-		onCanSend(*this);
+		canSend(*this);
 	} else if (header.flags() == 0) {
 		ReliableUdpPacketHeader ackHeader(cid, ReliableUdpPacketHeader::ACK, header.seq());
 
 		if (peerSeq < header.seq()) {
-			onReceive(*this, packet.skip(ReliableUdpPacketHeader::size));
+			receive(*this, packet.skip(ReliableUdpPacketHeader::size));
 		}
 
 		peerSeq = peerSeq < header.seq() ? header.seq() : peerSeq;

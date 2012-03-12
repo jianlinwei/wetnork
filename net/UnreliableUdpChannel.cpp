@@ -60,6 +60,6 @@ ssize_t UnreliableUdpChannel::send(const Packet& packet)
 
 void UnreliableUdpChannel::propagate(const Packet& packet)
 {
-	onReceive(*this, packet.skip(UnreliableUdpPacketHeader::size));
+	receive(*this, packet.skip(UnreliableUdpPacketHeader::size));
 }
 

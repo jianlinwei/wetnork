@@ -21,8 +21,6 @@ class UdpSocket;
 class UdpChannel : public Channel {
 	friend class UdpLink;
 	protected:
-		OnReceive onReceive;
-		OnCanSend onCanSend;
 		UdpLink& parent;
 		uint8_t cid;
 
