@@ -46,8 +46,9 @@ SignalConnection CryptoSession::connectPacketEncrypted(OnPacketEncrypted::slot_f
 
 void CryptoSession::setState(State state)
 {
-	stateChanged(*this, state);
+	State oldState = _state;
 	_state = state;
+	stateChanged(*this, oldState);
 }
 
 void CryptoSession::fail(int code)

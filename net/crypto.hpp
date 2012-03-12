@@ -74,7 +74,7 @@ class CryptoSession : private boost::noncopyable {
 		//	* only secure renegotiation
 		//	* send handshake_failure when appropriate
 		//	* reject connections with cert changes
-		typedef Signal<void (CryptoSession& self, State newState)> OnStateChanged;
+		typedef Signal<void (CryptoSession& self, State oldState)> OnStateChanged;
 		typedef Signal<void (CryptoSession& self, const Packet& packet)> OnPacketDecrypted;
 		typedef Signal<ssize_t (CryptoSession& self, const Packet& packet)> OnPacketEncrypted;
 
