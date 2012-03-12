@@ -4,7 +4,7 @@ Channel::~Channel()
 {
 }
 
-SignalConnection Channel::connectReceive(OnReceive::slot_function_type cb)
+bs2::connection Channel::connectReceive(OnReceive::slot_function_type cb)
 {
 	if (!receive.empty()) {
 		throw InvalidOperation("Receive already connected");
@@ -13,7 +13,7 @@ SignalConnection Channel::connectReceive(OnReceive::slot_function_type cb)
 	return receive.connect(cb);
 }
 
-SignalConnection Channel::connectCanSend(OnCanSend::slot_function_type cb)
+bs2::connection Channel::connectCanSend(OnCanSend::slot_function_type cb)
 {
 	if (!canSend.empty()) {
 		throw InvalidOperation("CanSend already connected");

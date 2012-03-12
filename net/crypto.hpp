@@ -113,12 +113,12 @@ class CryptoSession : private boost::noncopyable {
 
 		State state() const;
 
-		SignalConnection connectStateChanged(OnStateChanged::slot_function_type fn);
+		bs2::connection connectStateChanged(OnStateChanged::slot_function_type fn);
 
-		SignalConnection connectPacketDecrypted(OnPacketDecrypted::slot_function_type fn);
+		bs2::connection connectPacketDecrypted(OnPacketDecrypted::slot_function_type fn);
 		void readPacket(const Packet& packet);
 
-		SignalConnection connectPacketEncrypted(OnPacketEncrypted::slot_function_type fn);
+		bs2::connection connectPacketEncrypted(OnPacketEncrypted::slot_function_type fn);
 		bool writePacket(const Packet& packet);
 
 		void open();

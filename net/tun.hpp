@@ -30,7 +30,7 @@ class TunDevice : private boost::noncopyable {
 
 		ssize_t write(const Packet& packet);
 
-		SignalConnection connectCanRead(OnCanRead::slot_function_type cb);
+		bs2::connection connectCanRead(OnCanRead::slot_function_type cb);
 };
 
 #endif

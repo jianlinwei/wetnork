@@ -27,17 +27,17 @@ CryptoSession::~CryptoSession()
 
 
 
-SignalConnection CryptoSession::connectStateChanged(OnStateChanged::slot_function_type fn)
+bs2::connection CryptoSession::connectStateChanged(OnStateChanged::slot_function_type fn)
 {
 	return stateChanged.connect(fn);
 }
 
-SignalConnection CryptoSession::connectPacketDecrypted(OnPacketDecrypted::slot_function_type fn)
+bs2::connection CryptoSession::connectPacketDecrypted(OnPacketDecrypted::slot_function_type fn)
 {
 	return packetDecrypted.connect(fn);
 }
 
-SignalConnection CryptoSession::connectPacketEncrypted(OnPacketEncrypted::slot_function_type fn)
+bs2::connection CryptoSession::connectPacketEncrypted(OnPacketEncrypted::slot_function_type fn)
 {
 	return packetEncrypted.connect(fn);
 }

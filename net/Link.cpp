@@ -10,7 +10,7 @@ void Link::setState(State state)
 	stateChanged(*this, state);
 }
 
-SignalConnection Link::connectStateChanged(OnStateChanged::slot_function_type cb)
+bs2::connection Link::connectStateChanged(OnStateChanged::slot_function_type cb)
 {
 	if (!stateChanged.empty()) {
 		throw InvalidOperation("StateChanged already connected");

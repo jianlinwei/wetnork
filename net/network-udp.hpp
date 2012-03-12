@@ -57,7 +57,7 @@ class UdpLink : public Link {
 
 		UdpChannel* getChannel(int8_t id, bool reliable) override;
 
-		SignalConnection connectStateChanged(OnStateChanged::slot_function_type cb) override;
+		bs2::connection connectStateChanged(OnStateChanged::slot_function_type cb) override;
 
 		void close() override;
 };

@@ -44,9 +44,9 @@ class Channel {
 
 		virtual ssize_t send(const Packet& packet) = 0;
 
-		virtual SignalConnection connectReceive(OnReceive::slot_function_type cb);
+		virtual bs2::connection connectReceive(OnReceive::slot_function_type cb);
 
-		virtual SignalConnection connectCanSend(OnCanSend::slot_function_type cb);
+		virtual bs2::connection connectCanSend(OnCanSend::slot_function_type cb);
 };
 
 
@@ -75,7 +75,7 @@ class Link {
 
 		virtual Channel* getChannel(int8_t id, bool reliable) = 0;
 
-		virtual SignalConnection connectStateChanged(OnStateChanged::slot_function_type cb);
+		virtual bs2::connection connectStateChanged(OnStateChanged::slot_function_type cb);
 
 		virtual void close() = 0;
 };
@@ -95,7 +95,7 @@ class Socket {
 
 		virtual const SocketAddress& address() const = 0;
 
-		virtual SignalConnection listen(OnAccept::slot_function_type cb);
+		virtual bs2::connection listen(OnAccept::slot_function_type cb);
 };
 
 #endif
