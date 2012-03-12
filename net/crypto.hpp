@@ -4,11 +4,13 @@
 #include "signal.hpp"
 #include "network-common.hpp"
 #include "exception.hpp"
+#include "../include/crypto.hpp"
 
 #include <boost/utility.hpp>
 #include <gnutls/gnutls.h>
 #include <gnutls/openpgp.h>
 #include <memory>
+#include <set>
 
 class CryptoException : public Exception {
 	private:
@@ -28,10 +30,20 @@ class CryptoSession;
 
 class CryptoContext : private boost::noncopyable {
 	private:
-		CryptoSession* openSession(bool server) const;
+		gnutls_certificate_credentials_t credentials;
+
+		std::set<KeyFingerprint> _permissiblePeers;
+
+		static int gnutls_certificate_verify(gnutls_session_t session);
 
 	public:
 		CryptoContext();
+		~CryptoContext();
+
+		const std::set<KeyFingerprint>& permissiblePeers() const;
+		void permissiblePeers(const std::set<KeyFingerprint>& peers);
+
+		CryptoSession* openSession(bool server);
 };
 
 
@@ -66,6 +78,8 @@ class CryptoSession : private boost::noncopyable {
 		typedef Signal<void (CryptoSession& self, const Packet& packet)> OnPacketDecrypted;
 		typedef Signal<ssize_t (CryptoSession& self, const Packet& packet)> OnPacketEncrypted;
 
+		CryptoContext& context;
+
 		OnStateChanged stateChanged;
 		State _state;
 
@@ -91,7 +105,7 @@ class CryptoSession : private boost::noncopyable {
 		int pull_timeout(unsigned int ms);
 		ssize_t push(const void* data, size_t size);
 
-		CryptoSession(gnutls_session_t sesssion);
+		CryptoSession(gnutls_session_t sesssion, CryptoContext& context);
 
 	public:
 		~CryptoSession();

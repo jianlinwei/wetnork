@@ -6,16 +6,14 @@
 
 using namespace std;
 
-CryptoSession::CryptoSession(gnutls_session_t session)
-	: _state(State::Invalid), session(session)
+CryptoSession::CryptoSession(gnutls_session_t session, CryptoContext& context)
+	: context(context), _state(State::Invalid), session(session)
 {
 	if (!session) {
 		throw std::invalid_argument("session");
 	}
 
-	gnutls_transport_ptr_t ptr = this;
-
-	gnutls_transport_set_ptr(session, ptr);
+	gnutls_transport_set_ptr(session, this);
 
 	gnutls_transport_set_pull_function(session, gnutls_pull);
 	gnutls_transport_set_pull_timeout_function(session, gnutls_pull_timeout);

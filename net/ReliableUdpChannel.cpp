@@ -8,7 +8,7 @@
 #include "network.hpp"
 #include "network-udp-internal.hpp"
 
-using namespace std;
+using std::string;
 
 struct ReliableUdpPacketHeader {
 	private:

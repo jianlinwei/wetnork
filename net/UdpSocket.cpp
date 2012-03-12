@@ -8,7 +8,11 @@
 #include <netinet/in.h>
 #include <errno.h>
 
-using namespace std;
+// *sigh* ev++ monopolizes 'set' ...
+using std::bad_alloc;
+using std::invalid_argument;
+using std::nothrow;
+using std::string;
 
 UdpSocket::UdpSocket(int fd, const SocketAddress& address, ev::loop_ref& loop)
 	: fd(fd), watcher(loop), loop(loop), _address(address)
