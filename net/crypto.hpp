@@ -60,6 +60,10 @@ class CryptoSession : private boost::noncopyable {
 			Aborted
 		};
 
+		typedef Signal<void (CryptoSession& self, State oldState)> OnStateChanged;
+		typedef Signal<void (CryptoSession& self, const Packet& packet)> OnPacketDecrypted;
+		typedef Signal<ssize_t (CryptoSession& self, const Packet& packet)> OnPacketEncrypted;
+
 	private:
 		// non-fatal errors:
 		// AGAIN, REHANDSHAKE, WARNING_ALERT_RECEIVED
@@ -75,10 +79,6 @@ class CryptoSession : private boost::noncopyable {
 		//	* only secure renegotiation
 		//	* send handshake_failure when appropriate
 		//	* reject connections with cert changes
-		typedef Signal<void (CryptoSession& self, State oldState)> OnStateChanged;
-		typedef Signal<void (CryptoSession& self, const Packet& packet)> OnPacketDecrypted;
-		typedef Signal<ssize_t (CryptoSession& self, const Packet& packet)> OnPacketEncrypted;
-
 		CryptoContext& context;
 
 		OnStateChanged stateChanged;

@@ -10,9 +10,10 @@
 #include "network.hpp"
 
 class TunDevice : private boost::noncopyable {
-	private:
+	public:
 		typedef Signal<void (TunDevice& sender, const Packet& packet)> OnCanRead;
 
+	private:
 		const int fd;
 		const std::string _name;
 		ev::io watcher;

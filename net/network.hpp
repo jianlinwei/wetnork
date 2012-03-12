@@ -32,10 +32,11 @@ class SocketException : public Exception {
 
 
 class Channel {
-	protected:
+	public:
 		typedef Signal<void (Channel& sender, const Packet& packet)> OnReceive;
 		typedef Signal<void (Channel& sender)> OnCanSend;
 
+	protected:
 		OnReceive receive;
 		OnCanSend canSend;
 
@@ -60,9 +61,9 @@ class Link {
 			Closed
 		};
 
-	protected:
 		typedef Signal<void (Link& sender, State oldState)> OnStateChanged;
 
+	protected:
 		State _state;
 		OnStateChanged stateChanged;
 
@@ -81,9 +82,10 @@ class Link {
 };
 
 class Socket {
-	protected:
+	public:
 		typedef Signal<void (Socket& sender, Link* link)> OnAccept;
 
+	protected:
 		OnAccept accept;
 
 		Socket();
