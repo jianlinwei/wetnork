@@ -55,7 +55,7 @@ lib$(call submk_name,$1).a
 endef
 
 ifndef MAKE_RESTARTS
-$(shell touch -d yesterday .depend-check)
+$(shell touch -r Makefile -d yesterday .depend-check)
 include .depend-check
 else
 $(shell rm -f .depend-check)
