@@ -152,7 +152,7 @@ void CryptoSession::renegotiate()
 
 void CryptoSession::close()
 {
-	if (_state != State::Open) {
+	if (_state == State::Invalid || _state == State::Closed || _state == State::Aborted) {
 		throw InvalidOperation("Session not ready");
 	}
 
