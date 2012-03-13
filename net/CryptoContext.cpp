@@ -6,22 +6,40 @@
 
 using namespace std;
 
-CryptoContext::CryptoContext()
+CryptoContext::CryptoContext(const string& pubKey, const string& privKey, const std::string& subkey)
 {
+	if (pubKey.size() >= UINT_MAX) {
+		throw invalid_argument("pubKey");
+	}
+	if (privKey.size() >= UINT_MAX) {
+		throw invalid_argument("privKey");
+	}
+
 	int err = gnutls_certificate_allocate_credentials(&credentials);
 	if (err != 0) {
-		credentials = nullptr;
 		throw CryptoException(err, 0, gnutls_strerror(err));
 	}
 
 	gnutls_certificate_set_verify_function(credentials, &gnutls_certificate_verify);
+
+	gnutls_datum_t pubDat = {
+		reinterpret_cast<unsigned char*>(const_cast<char*>(pubKey.data())),
+		static_cast<unsigned int>(pubKey.size()) };
+	gnutls_datum_t privDat = {
+		reinterpret_cast<unsigned char*>(const_cast<char*>(privKey.data())),
+		static_cast<unsigned int>(privKey.size()) };
+
+	err = gnutls_certificate_set_openpgp_key_mem2(credentials, &pubDat, &privDat, subkey.c_str(),
+			GNUTLS_OPENPGP_FMT_BASE64);
+	if (err != 0) {
+		gnutls_certificate_free_credentials(credentials);
+		throw CryptoException(err, 0, gnutls_strerror(err));
+	}
 }
 
 CryptoContext::~CryptoContext()
 {
-	if (credentials) {
-		gnutls_certificate_free_credentials(credentials);
-	}
+	gnutls_certificate_free_credentials(credentials);
 }
 
 const set<KeyFingerprint>& CryptoContext::permissiblePeers() const

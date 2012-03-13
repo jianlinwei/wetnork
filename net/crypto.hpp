@@ -11,6 +11,7 @@
 #include <gnutls/openpgp.h>
 #include <memory>
 #include <set>
+#include <string>
 
 class CryptoException : public Exception {
 	private:
@@ -37,7 +38,7 @@ class CryptoContext : private boost::noncopyable {
 		static int gnutls_certificate_verify(gnutls_session_t session);
 
 	public:
-		CryptoContext();
+		CryptoContext(const std::string& pubKey, const std::string& privKey, const std::string& subkey = "auto");
 		~CryptoContext();
 
 		const std::set<KeyFingerprint>& permissiblePeers() const;
