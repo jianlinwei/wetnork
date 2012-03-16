@@ -34,7 +34,6 @@ class Link {
 			Invalid,
 			Opening,
 			Open,
-			Closing,
 			Closed
 		};
 

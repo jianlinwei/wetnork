@@ -40,6 +40,6 @@ ssize_t UdpLink::send(const msghdr* msg)
 
 void UdpLink::close()
 {
-	// TODO: close handling
+	setState(State::Closed);
 }
 
