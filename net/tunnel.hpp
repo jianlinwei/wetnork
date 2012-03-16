@@ -66,14 +66,14 @@ class Tunnel : private boost::noncopyable {
 		typedef std::map<uint8_t, Channel*> channel_map;
 
 		channel_map channels;
-		Link& link;
+		Link* link;
 		ev::loop_ref& loop;
 
 		Channel& getChannel(int8_t id, bool reliable);
 		void propagate(const Packet& packet);
 
 	public:
-		Tunnel(ev::loop_ref& loop, Link& link);
+		Tunnel(ev::loop_ref& loop, Link* link);
 
 		virtual ~Tunnel();
 };

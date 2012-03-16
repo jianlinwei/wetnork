@@ -4,7 +4,7 @@
 
 using namespace std;
 
-Tunnel::Tunnel(ev::loop_ref& loop, Link& link)
+Tunnel::Tunnel(ev::loop_ref& loop, Link* link)
 	: link(link), loop(loop)
 {
 }
@@ -13,7 +13,9 @@ Tunnel::~Tunnel()
 {
 	for (channel_map::iterator it = channels.begin(); it != channels.end(); it++) {
 		delete it->second;
-	}	
+	}
+	link->close();
+	delete link;
 }
 
 Tunnel::Channel& Tunnel::getChannel(int8_t id, bool reliable)
@@ -25,9 +27,9 @@ Tunnel::Channel& Tunnel::getChannel(int8_t id, bool reliable)
 	uint8_t cid = (reliable ? 0x80 : 0) | id;
 	if (!channels.count(cid)) {
 		if (reliable) {
-			channels[cid] = new ReliableChannel(link, cid, loop);
+			channels[cid] = new ReliableChannel(*link, cid, loop);
 		} else {
-			channels[cid] = new UnreliableChannel(link, cid);
+			channels[cid] = new UnreliableChannel(*link, cid);
 		}
 	}
 	return *channels[cid];
