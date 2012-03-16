@@ -28,6 +28,10 @@ UdpLink::~UdpLink()
 
 void UdpLink::propagatePacket(const Packet& packet)
 {
+	if (_state == State::Closed) {
+		return;
+	}
+
 	if (packet.length() == 0) {
 		throw InvalidOperation("Packet too short");
 	}
