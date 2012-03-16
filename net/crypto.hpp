@@ -102,10 +102,12 @@ class CryptoSession : private boost::noncopyable {
 		static ssize_t gnutls_pull(gnutls_transport_ptr_t ptr, void* data, size_t size);
 		static int gnutls_pull_timeout(gnutls_transport_ptr_t ptr, unsigned int ms);
 		static ssize_t gnutls_push(gnutls_transport_ptr_t ptr, const void* data, size_t size);
+		static ssize_t gnutls_vec_push(gnutls_transport_ptr_t ptr, const giovec_t* iov, int count);
 
 		ssize_t pull(void* data, size_t size);
 		int pull_timeout(unsigned int ms);
 		ssize_t push(const void* data, size_t size);
+		ssize_t vec_push(const giovec_t* iov, int count);
 
 		CryptoSession(gnutls_session_t sesssion, CryptoContext& context);
 

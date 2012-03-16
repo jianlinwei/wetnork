@@ -18,6 +18,7 @@ CryptoSession::CryptoSession(gnutls_session_t session, CryptoContext& context)
 	gnutls_transport_set_pull_function(session, gnutls_pull);
 	gnutls_transport_set_pull_timeout_function(session, gnutls_pull_timeout);
 	gnutls_transport_set_push_function(session, gnutls_push);
+	gnutls_transport_set_vec_push_function(session, gnutls_vec_push);
 }
 
 CryptoSession::~CryptoSession()
@@ -199,6 +200,11 @@ ssize_t CryptoSession::gnutls_push(gnutls_transport_ptr_t ptr, const void* data,
 	return reinterpret_cast<CryptoSession*>(ptr)->push(data, size);
 }
 
+ssize_t CryptoSession::gnutls_vec_push(gnutls_transport_ptr_t ptr, const giovec_t* iov, int count)
+{
+	return reinterpret_cast<CryptoSession*>(ptr)->vec_push(iov, count);
+}
+
 ssize_t CryptoSession::pull(void* data, size_t size)
 {
 	if (currentPacket) {
@@ -228,3 +234,19 @@ ssize_t CryptoSession::push(const void* data, size_t size)
 	return packetEncrypted(*this, Packet(buffer, 0, size)).get();
 }
 
+ssize_t CryptoSession::vec_push(const giovec_t* iov, int count)
+{
+	size_t size = 0;
+	for (int i = 0; i < count; i++) {
+		size += iov[i].iov_len;
+	}
+
+	uint8_t* buffer = new uint8_t[size];
+	size_t pos = 0;
+	for (int i = 0; i < count; i++) {
+		memcpy(buffer + pos, iov[i].iov_base, iov[i].iov_len);
+		pos += iov[i].iov_len;
+	}
+
+	return packetEncrypted(*this, Packet(buffer, 0, size)).get();
+}
