@@ -22,15 +22,18 @@ class UdpLink : public Link {
 	private:
 		ev::loop_ref& loop;
 		SocketAddress peer;
+		UdpSocket& parent;
 
 	protected:
 		int fd;
 
-		UdpLink(int fd, const SocketAddress& peer, ev::loop_ref& loop);
+		UdpLink(UdpSocket& parent, int fd, const SocketAddress& peer, ev::loop_ref& loop);
 
 		void propagatePacket(const Packet& packet);
 
 	public:
+		~UdpLink() override;
+
 		bs2::connection connectStateChanged(OnStateChanged::slot_function_type cb) override;
 
 		ssize_t send(const msghdr* msg) override;
@@ -39,6 +42,7 @@ class UdpLink : public Link {
 };
 
 class UdpSocket : public Socket, public boost::noncopyable {
+	friend class UdpLink;
 	private:
 		typedef std::map<SocketAddress, UdpLink*> peers_map;
 
@@ -51,6 +55,8 @@ class UdpSocket : public Socket, public boost::noncopyable {
 		void onPacketArrived(ev::io& io, int revents);
 
 		UdpSocket(int fd, const SocketAddress& address, ev::loop_ref& loop);
+
+		void removeLink(const SocketAddress& link);
 
 	public:
 		~UdpSocket() override;

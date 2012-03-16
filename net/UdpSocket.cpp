@@ -25,9 +25,16 @@ UdpSocket::~UdpSocket()
 {
 	watcher.stop();
 
-	for (peers_map::iterator it = peers.begin(); it != peers.end(); it++) {
-		delete it->second;
+	while (!peers.empty()) {
+		UdpLink* link = peers.begin()->second;
+		link->close();
+		delete link;
 	}
+}
+
+void UdpSocket::removeLink(const SocketAddress& link)
+{
+	peers.erase(link);
 }
 
 void UdpSocket::onPacketArrived(ev::io& io, int revents)
@@ -99,7 +106,7 @@ UdpLink* UdpSocket::connect(const SocketAddress& peer)
 
 	close(fd);
 
-	peers[peer] = new UdpLink(fd, peer, loop);
+	peers[peer] = new UdpLink(*this, fd, peer, loop);
 	
 	return peers[peer];
 	
