@@ -5,12 +5,11 @@
 #include <netinet/in.h>
 #include <errno.h>
 
-#include "network.hpp"
-#include "network-udp-internal.hpp"
+#include "tunnel.hpp"
 
 using std::string;
 
-struct ReliableUdpPacketHeader {
+struct ReliablePacketHeader {
 	private:
 		typedef struct {
 			uint8_t cid;
@@ -24,14 +23,14 @@ struct ReliableUdpPacketHeader {
 		static const uint8_t ACK = 0x01;
 		static const size_t size = sizeof(header_t);
 
-		ReliableUdpPacketHeader(uint8_t cid, uint8_t flags, uint32_t seq)
+		ReliablePacketHeader(uint8_t cid, uint8_t flags, uint32_t seq)
 		{
 			header.cid = cid;
 			header.flags = flags;
 			header.seq = htonl(seq);
 		}
 
-		ReliableUdpPacketHeader(const uint8_t* buffer)
+		ReliablePacketHeader(const uint8_t* buffer)
 		{
 			header = *reinterpret_cast<const header_t*>(buffer);
 		}
@@ -43,19 +42,19 @@ struct ReliableUdpPacketHeader {
 		void* data() { return &header; }
 };
 
-ReliableUdpChannel::ReliableUdpChannel(UdpLink& parent, uint8_t cid, ev::loop_ref& loop)
-	: UdpChannel(parent, cid), timeout(loop), inFlightPacket(NULL),
+Tunnel::ReliableChannel::ReliableChannel(Link& link, uint8_t cid, ev::loop_ref& loop)
+	: Channel(link, cid), timeout(loop), inFlightPacket(NULL),
 		localSeq(0), peerSeq(0)
 {
-	timeout.set<ReliableUdpChannel, &ReliableUdpChannel::onTimeout>(this);
+	timeout.set<ReliableChannel, &ReliableChannel::onTimeout>(this);
 }
 
-void ReliableUdpChannel::onTimeout(ev::timer& timer, int revents)
+void Tunnel::ReliableChannel::onTimeout(ev::timer& timer, int revents)
 {
 	transmitQueue();
 }
 
-void ReliableUdpChannel::transmitQueue()
+void Tunnel::ReliableChannel::transmitQueue()
 {
 	if (inFlightPacket) {
 		transmitPacket(*inFlightPacket);
@@ -64,12 +63,12 @@ void ReliableUdpChannel::transmitQueue()
 	}
 }
 
-void ReliableUdpChannel::transmitPacket(const Packet& packet)
+void Tunnel::ReliableChannel::transmitPacket(const Packet& packet)
 {
-	ReliableUdpPacketHeader header(cid, 0, localSeq);
+	ReliablePacketHeader header(cid, 0, localSeq);
 
 	iovec iov[] = {
-		{ header.data(), ReliableUdpPacketHeader::size },
+		{ header.data(), ReliablePacketHeader::size },
 		{ const_cast<uint8_t*>(packet.data()), packet.length() }
 	};
 
@@ -78,14 +77,14 @@ void ReliableUdpChannel::transmitPacket(const Packet& packet)
 	msg.msg_iov = iov;
 	msg.msg_iovlen = 2;
 
-	int result = parent.send(&msg);
-	if (result < packet.length() + ReliableUdpPacketHeader::size
+	int result = link.send(&msg);
+	if (result < packet.length() + ReliablePacketHeader::size
 			&& !(result == -1 && errno == EAGAIN)) {
 		throw SocketException(errno, string("Could not send packet: ") + strerror(errno));
 	}
 }
 
-ssize_t ReliableUdpChannel::send(const Packet& packet)
+ssize_t Tunnel::ReliableChannel::send(const Packet& packet)
 {
 	if (inFlightPacket) {
 		return false;
@@ -96,11 +95,11 @@ ssize_t ReliableUdpChannel::send(const Packet& packet)
 	return true;
 }
 
-void ReliableUdpChannel::propagate(const Packet& packet)
+void Tunnel::ReliableChannel::propagate(const Packet& packet)
 {
-	ReliableUdpPacketHeader header(packet.data());
+	ReliablePacketHeader header(packet.data());
 
-	if (header.flags() & ReliableUdpPacketHeader::ACK
+	if (header.flags() & ReliablePacketHeader::ACK
 			&& localSeq == header.seq()) {
 		localSeq++;
 		delete inFlightPacket;
@@ -108,16 +107,16 @@ void ReliableUdpChannel::propagate(const Packet& packet)
 
 		canSend(*this);
 	} else if (header.flags() == 0) {
-		ReliableUdpPacketHeader ackHeader(cid, ReliableUdpPacketHeader::ACK, header.seq());
+		ReliablePacketHeader ackHeader(cid, ReliablePacketHeader::ACK, header.seq());
 
 		if (peerSeq < header.seq()) {
-			receive(*this, packet.skip(ReliableUdpPacketHeader::size));
+			receive(*this, packet.skip(ReliablePacketHeader::size));
 		}
 
 		peerSeq = peerSeq < header.seq() ? header.seq() : peerSeq;
 
 		iovec iov[] = {
-			{ ackHeader.data(), ReliableUdpPacketHeader::size }
+			{ ackHeader.data(), ReliablePacketHeader::size }
 		};
 
 		msghdr msg;
@@ -125,7 +124,7 @@ void ReliableUdpChannel::propagate(const Packet& packet)
 		msg.msg_iov = iov;
 		msg.msg_iovlen = 1;
 
-		parent.send(&msg);
+		link.send(&msg);
 	}
 }
 

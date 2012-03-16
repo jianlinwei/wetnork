@@ -14,30 +14,12 @@
 
 #include "network.hpp"
 
-class UdpChannel;
 class UdpLink;
 class UdpSocket;
 
-class UdpChannel : public Channel {
-	friend class UdpLink;
-	protected:
-		UdpLink& parent;
-		uint8_t cid;
-
-		UdpChannel(UdpLink& parent, uint8_t cid);
-
-		virtual void propagate(const Packet& packet) = 0;
-};
-
 class UdpLink : public Link {
-	friend class UdpChannel;
-	friend class UnreliableUdpChannel;
-	friend class ReliableUdpChannel;
 	friend class UdpSocket;
 	private:
-		typedef std::map<uint8_t, UdpChannel*> channel_map;
-
-		channel_map channels;
 		ev::loop_ref& loop;
 		SocketAddress peer;
 
@@ -48,14 +30,10 @@ class UdpLink : public Link {
 
 		void propagatePacket(const Packet& packet);
 
-		ssize_t send(const msghdr* msg);
-
 	public:
-		~UdpLink() override;
-
-		UdpChannel* getChannel(int8_t id, bool reliable) override;
-
 		bs2::connection connectStateChanged(OnStateChanged::slot_function_type cb) override;
+
+		ssize_t send(const msghdr* msg) override;
 
 		void close() override;
 };

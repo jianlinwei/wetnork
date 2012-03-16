@@ -1,5 +1,5 @@
 #include "network.hpp"
-#include "network-udp-internal.hpp"
+#include "network-udp.hpp"
 
 #include <stdlib.h>
 #include <stddef.h>

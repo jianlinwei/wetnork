@@ -28,29 +28,6 @@ class SocketException : public Exception {
 
 
 
-
-
-
-class Channel {
-	public:
-		typedef Signal<void (Channel& sender, const Packet& packet)> OnReceive;
-		typedef Signal<void (Channel& sender)> OnCanSend;
-
-	protected:
-		OnReceive receive;
-		OnCanSend canSend;
-
-	public:
-		virtual ~Channel();
-
-		virtual ssize_t send(const Packet& packet) = 0;
-
-		virtual bs2::connection connectReceive(OnReceive::slot_function_type cb);
-
-		virtual bs2::connection connectCanSend(OnCanSend::slot_function_type cb);
-};
-
-
 class Link {
 	public:
 		enum class State {
@@ -62,10 +39,12 @@ class Link {
 		};
 
 		typedef Signal<void (Link& sender, State oldState)> OnStateChanged;
+		typedef Signal<void (Link& sender, const Packet& packet)> OnReceive;
 
 	protected:
 		State _state;
 		OnStateChanged stateChanged;
+		OnReceive receive;
 
 		virtual void setState(State state);
 
@@ -74,9 +53,11 @@ class Link {
 
 		virtual State state() const;
 
-		virtual Channel* getChannel(int8_t id, bool reliable) = 0;
-
 		virtual bs2::connection connectStateChanged(OnStateChanged::slot_function_type cb);
+
+		virtual bs2::connection connectReceive(OnReceive::slot_function_type cb);
+
+		virtual ssize_t send(const msghdr* msg) = 0;
 
 		virtual void close() = 0;
 };

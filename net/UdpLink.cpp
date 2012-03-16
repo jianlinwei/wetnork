@@ -8,7 +8,7 @@
 #include <stdexcept>
 
 #include "network.hpp"
-#include "network-udp-internal.hpp"
+#include "network-udp.hpp"
 
 using namespace std;
 
@@ -24,17 +24,7 @@ void UdpLink::propagatePacket(const Packet& packet)
 		throw InvalidOperation("Packet too short");
 	}
 
-	uint8_t channel = packet.data()[0];
-	bool reliableChannel = !!(channel & 0x80);
-
-	getChannel(channel & ~0x80, reliableChannel)->propagate(packet.skip(1));
-}
-
-UdpLink::~UdpLink()
-{
-	for (channel_map::iterator it = channels.begin(); it != channels.end(); it++) {
-		delete it->second;
-	}
+	receive(*this, packet);
 }
 
 ssize_t UdpLink::send(const msghdr* msg)
@@ -46,23 +36,6 @@ ssize_t UdpLink::send(const msghdr* msg)
 	actual.msg_namelen = peer.native_len();
 
 	return sendmsg(fd, &actual, MSG_DONTWAIT);
-}
-
-UdpChannel* UdpLink::getChannel(int8_t id, bool reliable)
-{
-	if (id < 0) {
-		throw invalid_argument("id");
-	}
-
-	uint8_t cid = (reliable ? 0x80 : 0) | id;
-	if (!channels.count(cid)) {
-		if (reliable) {
-			channels[cid] = new ReliableUdpChannel(*this, cid, loop);
-		} else {
-			channels[cid] = new UnreliableUdpChannel(*this, cid);
-		}
-	}
-	return channels[cid];
 }
 
 void UdpLink::close()
