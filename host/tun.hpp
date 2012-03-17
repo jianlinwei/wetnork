@@ -6,7 +6,7 @@
 #include <string>
 #include "exception.hpp"
 
-class TunRegistry : private boost::noncopyable {
+class TunRegistry : boost::noncopyable {
 	private:
 		std::map<std::string, int> devices;
 

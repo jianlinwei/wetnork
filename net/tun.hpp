@@ -9,7 +9,7 @@
 
 #include "network.hpp"
 
-class TunDevice : private boost::noncopyable {
+class TunDevice : boost::noncopyable {
 	public:
 		typedef Signal<void (TunDevice& sender, const Packet& packet)> OnCanRead;
 

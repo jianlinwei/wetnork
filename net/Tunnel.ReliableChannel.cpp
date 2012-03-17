@@ -84,7 +84,7 @@ void Tunnel::ReliableChannel::transmitPacket(const Packet& packet)
 	}
 }
 
-ssize_t Tunnel::ReliableChannel::send(const Packet& packet)
+ssize_t Tunnel::ReliableChannel::writePacket(const Packet& packet)
 {
 	if (inFlightPacket) {
 		return false;
@@ -95,7 +95,7 @@ ssize_t Tunnel::ReliableChannel::send(const Packet& packet)
 	return true;
 }
 
-void Tunnel::ReliableChannel::propagate(const Packet& packet)
+void Tunnel::ReliableChannel::readPacket(const Packet& packet)
 {
 	ReliablePacketHeader header(packet.data());
 

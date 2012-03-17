@@ -44,5 +44,5 @@ void Tunnel::propagate(const Packet& packet)
 	uint8_t channel = packet.data()[0];
 	bool reliableChannel = !!(channel & 0x80);
 
-	getChannel(channel & ~0x80, reliableChannel).propagate(packet.skip(1));
+	getChannel(channel & ~0x80, reliableChannel).readPacket(packet.skip(1));
 }

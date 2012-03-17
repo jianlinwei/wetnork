@@ -8,10 +8,9 @@
 #include <ev++.h>
 #include <map>
 
-class Tunnel : private boost::noncopyable {
+class Tunnel : boost::noncopyable {
 	private:
-		class Channel {
-			friend class Tunnel;
+		class Channel : boost::noncopyable {
 			public:
 				typedef Signal<void (Channel& sender, const Packet& packet)> OnReceive;
 				typedef Signal<void (Channel& sender)> OnCanSend;
@@ -25,15 +24,13 @@ class Tunnel : private boost::noncopyable {
 
 				Channel(Link& link, uint8_t cid);
 
-				virtual void propagate(const Packet& packet) = 0;
-
 			public:
 				virtual ~Channel();
 
-				virtual ssize_t send(const Packet& packet) = 0;
+				virtual void readPacket(const Packet& packet) = 0;
+				virtual ssize_t writePacket(const Packet& packet) = 0;
 
 				virtual bs2::connection connectReceive(OnReceive::slot_function_type cb);
-
 				virtual bs2::connection connectCanSend(OnCanSend::slot_function_type cb);
 		};	
 
@@ -41,8 +38,8 @@ class Tunnel : private boost::noncopyable {
 			public:
 				UnreliableChannel(Link& link, uint8_t cid);
 
-				ssize_t send(const Packet& packet) override;
-				void propagate(const Packet& packet) override;
+				void readPacket(const Packet& packet) override;
+				ssize_t writePacket(const Packet& packet) override;
 		};
 
 		class ReliableChannel : public Channel {
@@ -59,8 +56,8 @@ class Tunnel : private boost::noncopyable {
 			public:
 				ReliableChannel(Link& link, uint8_t cid, ev::loop_ref& loop);
 
-				ssize_t send(const Packet& packet) override;
-				void propagate(const Packet& packet) override;
+				void readPacket(const Packet& packet) override;
+				ssize_t writePacket(const Packet& packet) override;
 		};
 
 		typedef std::map<uint8_t, Channel*> channel_map;

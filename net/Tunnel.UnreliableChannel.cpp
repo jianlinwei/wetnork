@@ -34,7 +34,7 @@ Tunnel::UnreliableChannel::UnreliableChannel(Link& link, uint8_t cid)
 {
 }
 
-ssize_t Tunnel::UnreliableChannel::send(const Packet& packet)
+ssize_t Tunnel::UnreliableChannel::writePacket(const Packet& packet)
 {
 	UnreliablePacketHeader header(cid);
 
@@ -57,7 +57,7 @@ ssize_t Tunnel::UnreliableChannel::send(const Packet& packet)
 	return true;
 }
 
-void Tunnel::UnreliableChannel::propagate(const Packet& packet)
+void Tunnel::UnreliableChannel::readPacket(const Packet& packet)
 {
 	receive(*this, packet.skip(UnreliablePacketHeader::size));
 }

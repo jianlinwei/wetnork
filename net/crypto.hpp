@@ -29,7 +29,7 @@ class CryptoException : public Exception {
 
 class CryptoSession;
 
-class CryptoContext : private boost::noncopyable {
+class CryptoContext : boost::noncopyable {
 	private:
 		gnutls_certificate_credentials_t credentials;
 
@@ -49,7 +49,7 @@ class CryptoContext : private boost::noncopyable {
 
 
 
-class CryptoSession : private boost::noncopyable {
+class CryptoSession : boost::noncopyable {
 	friend class CryptoContext;
 	public:
 		enum class State {

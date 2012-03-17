@@ -41,7 +41,7 @@ class UdpLink : public Link {
 		void close() override;
 };
 
-class UdpSocket : public Socket, public boost::noncopyable {
+class UdpSocket : public Socket, boost::noncopyable {
 	friend class UdpLink;
 	private:
 		typedef std::map<SocketAddress, UdpLink*> peers_map;
