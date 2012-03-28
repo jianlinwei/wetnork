@@ -43,7 +43,7 @@ struct ReliablePacketHeader {
 };
 
 Tunnel::ReliableChannel::ReliableChannel(Link& link, uint8_t cid, ev::loop_ref& loop)
-	: Channel(link, cid), timeout(loop), inFlightPacket(NULL),
+	: Channel(link, cid), timeout(loop), inFlightPacket(),
 		localSeq(0), peerSeq(0)
 {
 	timeout.set<ReliableChannel, &ReliableChannel::onTimeout>(this);
@@ -90,7 +90,7 @@ ssize_t Tunnel::ReliableChannel::writePacket(const Packet& packet)
 		return false;
 	}
 
-	inFlightPacket = new Packet(packet);
+	inFlightPacket.reset(new Packet(packet));
 
 	return true;
 }
@@ -102,8 +102,7 @@ void Tunnel::ReliableChannel::readPacket(const Packet& packet)
 	if (header.flags() & ReliablePacketHeader::ACK
 			&& localSeq == header.seq()) {
 		localSeq++;
-		delete inFlightPacket;
-		inFlightPacket = NULL;
+		inFlightPacket.reset();
 
 		canSend(*this);
 	} else if (header.flags() == 0) {

@@ -2,11 +2,12 @@
 #define NET_TUNNEL_H
 
 #include <boost/utility.hpp>
+#include <boost/ptr_container/ptr_map.hpp>
 #include "signal.hpp"
 #include "network.hpp"
 #include "network-common.hpp"
 #include <ev++.h>
-#include <map>
+#include <memory>
 
 class Tunnel : boost::noncopyable {
 	private:
@@ -45,7 +46,7 @@ class Tunnel : boost::noncopyable {
 		class ReliableChannel : public Channel {
 			private:
 				ev::timer timeout;
-				Packet* inFlightPacket;
+				std::unique_ptr<Packet> inFlightPacket;
 				uint32_t localSeq, peerSeq;
 
 				void onTimeout(ev::timer& timer, int revents);
@@ -60,10 +61,10 @@ class Tunnel : boost::noncopyable {
 				ssize_t writePacket(const Packet& packet) override;
 		};
 
-		typedef std::map<uint8_t, Channel*> channel_map;
+		typedef boost::ptr_map<uint8_t, Channel> channel_map;
 
 		channel_map channels;
-		Link* link;
+		std::unique_ptr<Link> link;
 		ev::loop_ref& loop;
 
 		Channel& getChannel(int8_t id, bool reliable);
