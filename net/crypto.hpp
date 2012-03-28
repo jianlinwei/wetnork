@@ -1,17 +1,18 @@
 #ifndef NET_CRYPTO_H
 #define NET_CRYPTO_H
 
-#include "signal.hpp"
-#include "network-common.hpp"
-#include "exception.hpp"
-#include "../include/crypto.hpp"
-
 #include <boost/utility.hpp>
 #include <gnutls/gnutls.h>
 #include <gnutls/openpgp.h>
 #include <memory>
 #include <set>
 #include <string>
+
+#include <exception.hpp>
+#include <crypto.hpp>
+#include <signal.hpp>
+
+#include "network-common.hpp"
 
 class CryptoException : public Exception {
 	private:

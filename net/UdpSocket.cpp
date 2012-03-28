@@ -1,12 +1,12 @@
-#include "network.hpp"
-#include "network-udp.hpp"
-
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <errno.h>
+
+#include "network.hpp"
+#include "network-udp.hpp"
 
 // *sigh* ev++ monopolizes 'set' ...
 using std::bad_alloc;

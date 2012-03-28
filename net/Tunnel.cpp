@@ -1,6 +1,8 @@
-#include "tunnel.hpp"
-#include "exception.hpp"
 #include <stdexcept>
+
+#include <exception.hpp>
+
+#include "tunnel.hpp"
 
 using namespace std;
 

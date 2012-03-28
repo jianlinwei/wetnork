@@ -1,8 +1,9 @@
-#include "crypto.hpp"
-
-#include "exception.hpp"
 #include <stdexcept>
 #include <string.h>
+
+#include <exception.hpp>
+
+#include "crypto.hpp"
 
 using namespace std;
 

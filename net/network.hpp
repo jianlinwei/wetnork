@@ -1,12 +1,6 @@
 #ifndef NET_NETWORK_H
 #define NET_NETWORK_H
 
-#include "exception.hpp"
-#include "signal.hpp"
-#include "../include/network.hpp"
-#include "network-common.hpp"
-#include "crypto.hpp"
-
 #include <sys/socket.h>
 #include <ev++.h>
 #include <netinet/in.h>
@@ -15,6 +9,13 @@
 #include <string>
 #include <arpa/inet.h>
 #include <boost/shared_array.hpp>
+
+#include <exception.hpp>
+#include <network.hpp>
+#include <signal.hpp>
+#include <crypto.hpp>
+
+#include "network-common.hpp"
 
 class SocketException : public Exception {
 	private:

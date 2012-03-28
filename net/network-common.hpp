@@ -1,10 +1,6 @@
 #ifndef NET_NETWORK_COMMON_H
 #define NET_NETWORK_COMMON_H
 
-#include "exception.hpp"
-#include "signal.hpp"
-#include "../include/network.hpp"
-
 #include <sys/socket.h>
 #include <ev++.h>
 #include <netinet/in.h>
@@ -13,6 +9,10 @@
 #include <string>
 #include <arpa/inet.h>
 #include <boost/shared_array.hpp>
+
+#include <network.hpp>
+#include <exception.hpp>
+#include <signal.hpp>
 
 class Packet {
 	private:

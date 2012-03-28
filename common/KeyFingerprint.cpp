@@ -1,8 +1,8 @@
-#include "crypto.hpp"
-
-#include "exception.hpp"
 #include <stdexcept>
 #include <string.h>
+
+#include <crypto.hpp>
+#include <exception.hpp>
 
 KeyFingerprint::KeyFingerprint(const char* data, int length)
 {

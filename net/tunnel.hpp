@@ -3,11 +3,13 @@
 
 #include <boost/utility.hpp>
 #include <boost/ptr_container/ptr_map.hpp>
-#include "signal.hpp"
-#include "network.hpp"
-#include "network-common.hpp"
 #include <ev++.h>
 #include <memory>
+
+#include <signal.hpp>
+
+#include "network.hpp"
+#include "network-common.hpp"
 
 class Tunnel : boost::noncopyable {
 	private:

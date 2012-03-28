@@ -1,5 +1,3 @@
-#include "network.hpp"
-
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -8,6 +6,8 @@
 #include <stdexcept>
 #include <string.h>
 #include <arpa/inet.h>
+
+#include <network.hpp>
 
 using namespace std;
 

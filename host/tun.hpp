@@ -4,7 +4,8 @@
 #include <boost/utility.hpp>
 #include <map>
 #include <string>
-#include "exception.hpp"
+
+#include <exception.hpp>
 
 class TunRegistry : boost::noncopyable {
 	private:
