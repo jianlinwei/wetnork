@@ -16,6 +16,10 @@
 
 class Packet {
 	private:
+		struct NullDeleter {
+			void operator()(const uint8_t*) {}
+		};
+
 		boost::shared_array<const uint8_t> _data;
 		ptrdiff_t _offset;
 		size_t _length;
@@ -23,7 +27,7 @@ class Packet {
 		Packet(const boost::shared_array<const uint8_t>& data, ptrdiff_t offset, size_t length);
 
 	public:
-		Packet(uint8_t* data, ptrdiff_t offset, size_t length);
+		Packet(uint8_t* data, ptrdiff_t offset, size_t length, bool capture = true);
 
 		const uint8_t* data() const;
 
