@@ -25,16 +25,15 @@ UdpSocket::~UdpSocket()
 {
 	watcher.stop();
 
-	while (!peers.empty()) {
-		UdpLink* link = peers.begin()->second;
-		link->close();
-		delete link;
-	}
+	peers_map localPeers(peers.release());
+	localPeers.clear();
 }
 
 void UdpSocket::removeLink(const SocketAddress& link)
 {
-	peers.erase(link);
+	if (!peers.empty()) {
+		peers.erase(link);
+	}
 }
 
 void UdpSocket::onPacketArrived(ev::io& io, int revents)
@@ -65,9 +64,9 @@ void UdpSocket::onPacketArrived(ev::io& io, int revents)
 			// TODO: accept connections
 		}
 	} else {
-		UdpLink* link = peers[s_addr];
+		UdpLink& link = peers.at(s_addr);
 
-		link->propagatePacket(Packet(packetBuffer, 0, plen));
+		link.propagatePacket(Packet(packetBuffer, 0, plen));
 	}
 }
 
@@ -88,7 +87,7 @@ UdpSocket* UdpSocket::create(const SocketAddress& addr, ev::loop_ref& loop)
 	return new UdpSocket(fd, addr, loop);
 }
 
-UdpLink* UdpSocket::connect(const SocketAddress& peer)
+UdpLink& UdpSocket::connect(const SocketAddress& peer)
 {
 	if (peer.family() != _address.family()) {
 		throw invalid_argument("peer");
@@ -106,9 +105,9 @@ UdpLink* UdpSocket::connect(const SocketAddress& peer)
 
 	close(fd);
 
-	peers[peer] = new UdpLink(*this, fd, peer, loop);
+	peers.insert(peer, new UdpLink(*this, fd, peer, loop));
 	
-	return peers[peer];
+	return peers.at(peer);
 	
 	// TODO: connect handling
 }

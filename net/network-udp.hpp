@@ -5,7 +5,7 @@
 #include <ev++.h>
 #include <netinet/in.h>
 #include <boost/signals2.hpp>
-#include <map>
+#include <boost/ptr_container/ptr_map.hpp>
 #include <stdint.h>
 #include <string>
 #include <arpa/inet.h>
@@ -44,7 +44,7 @@ class UdpLink : public Link {
 class UdpSocket : public Socket, boost::noncopyable {
 	friend class UdpLink;
 	private:
-		typedef std::map<SocketAddress, UdpLink*> peers_map;
+		typedef boost::ptr_map<const SocketAddress, UdpLink> peers_map;
 
 		int fd;
 		ev::io watcher;
@@ -63,7 +63,7 @@ class UdpSocket : public Socket, boost::noncopyable {
 
 		static UdpSocket* create(const SocketAddress& addr, ev::loop_ref& loop);
 
-		UdpLink* connect(const SocketAddress& peer) override;
+		UdpLink& connect(const SocketAddress& peer) override;
 
 		const SocketAddress& address() const override;
 };

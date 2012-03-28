@@ -74,7 +74,7 @@ class Socket {
 	public:
 		virtual ~Socket();
 
-		virtual Link* connect(const SocketAddress& peer);
+		virtual Link& connect(const SocketAddress& peer) = 0;
 
 		virtual const SocketAddress& address() const = 0;
 
