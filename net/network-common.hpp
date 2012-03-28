@@ -17,13 +17,13 @@
 class Packet {
 	private:
 		boost::shared_array<const uint8_t> _data;
-		off_t _offset;
+		ptrdiff_t _offset;
 		size_t _length;
 
-		Packet(const boost::shared_array<const uint8_t>& data, off_t offset, size_t length);
+		Packet(const boost::shared_array<const uint8_t>& data, ptrdiff_t offset, size_t length);
 
 	public:
-		Packet(uint8_t* data, off_t offset, size_t length);
+		Packet(uint8_t* data, ptrdiff_t offset, size_t length);
 
 		const uint8_t* data() const;
 

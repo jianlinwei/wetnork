@@ -1,11 +1,11 @@
 #include "network.hpp"
 
-Packet::Packet(const boost::shared_array<const uint8_t>& data, off_t offset, size_t length)
+Packet::Packet(const boost::shared_array<const uint8_t>& data, ptrdiff_t offset, size_t length)
 	: _data(data), _offset(offset), _length(length)
 {
 }
 
-Packet::Packet(uint8_t* data, off_t offset, size_t length)
+Packet::Packet(uint8_t* data, ptrdiff_t offset, size_t length)
 	: _data(data), _offset(offset), _length(length)
 {
 }
