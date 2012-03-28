@@ -6,7 +6,7 @@ PARTICLES = net host common
 CPPFLAGS += -DEV_COMPAT3=0
 CPPFLAGS += -I include
 
-CXXFLAGS += -std=c++11 -fPIC -Wall -Wnon-virtual-dtor -pedantic
+CXXFLAGS += -std=c++11 -fPIC -Wall -Wnon-virtual-dtor -pedantic -O2
 
 LDFLAGS += -pie
 
