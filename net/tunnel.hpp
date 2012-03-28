@@ -9,7 +9,6 @@
 #include <signal.hpp>
 
 #include "network.hpp"
-#include "network-common.hpp"
 
 class Tunnel : boost::noncopyable {
 	private:

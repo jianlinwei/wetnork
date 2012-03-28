@@ -10,9 +10,8 @@
 
 #include <exception.hpp>
 #include <crypto.hpp>
+#include <network.hpp>
 #include <signal.hpp>
-
-#include "network-common.hpp"
 
 class CryptoException : public Exception {
 	private:

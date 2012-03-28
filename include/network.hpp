@@ -4,6 +4,11 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <string>
+#include <boost/smart_ptr/shared_array.hpp>
+#include <list>
+#include <boost/utility.hpp>
+
+#include <signal.hpp>
 
 struct SocketAddress {
 	private:
@@ -29,6 +34,50 @@ struct SocketAddress {
 		bool operator<(const SocketAddress& other) const;
 
 		bool operator==(const SocketAddress& other) const;
+};
+
+
+
+class Packet {
+	private:
+		struct NullDeleter {
+			void operator()(const uint8_t*) {}
+		};
+
+		boost::shared_array<const uint8_t> _data;
+		ptrdiff_t _offset;
+		size_t _length;
+
+		Packet(const boost::shared_array<const uint8_t>& data, ptrdiff_t offset, size_t length);
+
+	public:
+		Packet(uint8_t* data, ptrdiff_t offset, size_t length, bool capture = true);
+
+		const uint8_t* data() const;
+
+		size_t length() const;
+
+		Packet skip(size_t bytes) const;
+};
+
+
+
+class Stream : boost::noncopyable {
+	public:
+		typedef Signal<void (Stream& sender, const Packet& packet)> OnRead;
+
+	private:
+		OnRead read;
+
+	protected:
+		void propagate(const Packet& packet);
+
+	public:
+		virtual ~Stream();
+
+		virtual size_t write(const Packet& packet) = 0;
+
+		bs2::connection connectRead(OnRead::slot_function_type fn);
 };
 
 #endif

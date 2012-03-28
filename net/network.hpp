@@ -15,8 +15,6 @@
 #include <signal.hpp>
 #include <crypto.hpp>
 
-#include "network-common.hpp"
-
 class SocketException : public Exception {
 	private:
 		int _number;
