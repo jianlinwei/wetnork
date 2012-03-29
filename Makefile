@@ -3,15 +3,14 @@ TARGETS = wetnork
 PARTICLES = net host common
 
 # default compiler/linker flags
-CPPFLAGS += -DEV_COMPAT3=0
-CPPFLAGS += -I include
+CPPFLAGS += -std=c++11 -DEV_COMPAT3=0 -I include
 
-CXXFLAGS += -fPIC -Wall -Wnon-virtual-dtor -pedantic -O2
+CXXFLAGS += -std=c++11 -fPIC -Wall -Wnon-virtual-dtor -pedantic -O2
 
 LDFLAGS += -pie
 
 # default values for internal variables
-CXX = clang++ -std=c++11
+CXX = clang++
 CPP = $(CXX) -E
 SED = sed
 FIND = find
