@@ -6,14 +6,15 @@ PARTICLES = net host common
 CPPFLAGS += -DEV_COMPAT3=0
 CPPFLAGS += -I include
 
-CXXFLAGS += -std=c++11 -fPIC -Wall -Wnon-virtual-dtor -pedantic -O2
+CXXFLAGS += -fPIC -Wall -Wnon-virtual-dtor -pedantic -O2
 
 LDFLAGS += -pie
 
 # default values for internal variables
-ifeq "$(origin CXX)" "default"
-	CXX = clang++
-endif
+CXX = clang++ -std=c++11
+CPP = $(CXX) -E
+SED = sed
+FIND = find
 ifndef OBJDIR
 	OBJDIR = obj
 endif
@@ -58,7 +59,7 @@ ifndef MAKE_RESTARTS
 $(shell touch -r Makefile -d yesterday .depend-check)
 include .depend-check
 else
-$(shell rm -f .depend-check)
+$(shell $(RM) .depend-check)
 DEPEND_CHECK_DONE = 1
 endif
 
@@ -83,9 +84,8 @@ all: $(TARGET_EXECUTABLES)
 deps:
 
 ifdef DEPEND_CHECK_DONE
-include $(PARTICLE_MAKEFILES)
-DEPFILES = $(DEP_SRC:.cpp=.d)
-include $(DEPFILES)
+-include $(PARTICLE_MAKEFILES)
+-include $(patsubst %.cpp,$(OBJDIR)/%.o.d,$(DEP_SRC))
 endif
 
 PARTICLE_LIBRARY_NAMES = $(foreach lib,$(PARTICLES),$(call sublib_name,$(lib)))
@@ -101,11 +101,13 @@ $(BINDIR)/%: $(OBJDIR)/%.o $(patsubst %,$(OBJDIR)/%,$(PARTICLE_LIBRARY_NAMES)) |
 	@echo -e "[LD]\t" $@
 	$V$(CXX) -o $@ $< $(LDFLAGS)
 
+.SECONDARY: $(patsubst %,$(OBJDIR)/%.o,$(TARGETS))
+
 clean:
 	-$(RM) -r $(OBJDIR) $(BINDIR) $(PARTICLE_MAKEFILES)
    
 depclean:
-	-$(RM)  $(DEPFILES)
+	-$(FIND) $(OBJDIR) -iname '*.d' -delete
 
 distclean:
 	-$(RM) -r $(BINDIR)
@@ -113,27 +115,24 @@ distclean:
 $(OBJDIR)/%.o: %.cpp Makefile | $(DIRS)
 	@echo -e "[CXX]\t" $<
 	$V$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
+	$(call generate_depfile,$<,$@)
 
 $(DIRS):
 	@mkdir -p $@
-
-%.d: %.cpp Makefile
-	@echo -e "[DEP]\t" $<
-	$(call generate_depfile,$<,$@)
 
 $(PARTICLE_MAKEFILES): Makefile
 	@echo -e "[GEN]\t" $@
 	$(call generate_subdir_makefile,$@)
 
-.PHONY: clean distclean depclean $(DIRS) deps
+.PHONY: clean distclean depclean $(DIRS) deps all
 
 
 # result: shell command to create a dependency file
-# argument 1: input file
-# argument 2: output file
+# argument 1: input source file
+# argument 2: output object file
 define generate_depfile =
-	$V$(CPP) -MM -MP -MT $(2:.d=.o) $(CPPFLAGS) $1 -MF $2 \
-		&& sed -e 's@^\(.*\)\.o:@\1.d $(OBJDIR)/\1.o:@' -i $2
+	$V$(CPP) -MM -MP -MT $2 $(CPPFLAGS) $1 > $2.d \
+		&& $(SED) -e 's@^\(.*\)\.o:@\1.d \1.o:@' -i $2.d
 endef
 
 # result: shell commands to create a particle Makefile
