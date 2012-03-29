@@ -1,6 +1,6 @@
 # main targets and particle libraries
-TARGETS = wetnork
-PARTICLES = net host common
+TARGETS := wetnork
+PARTICLES := net host common
 
 # default compiler/linker flags
 CPPFLAGS += -std=c++11 -DEV_COMPAT3=0 -I include
@@ -10,10 +10,10 @@ CXXFLAGS += -std=c++11 -fPIC -Wall -Wnon-virtual-dtor -pedantic -O2
 LDFLAGS += -pie
 
 # default values for internal variables
-CXX = clang++
-CPP = $(CXX) -E
-SED = sed
-FIND = find
+CXX := clang++
+CPP := $(CXX) -E
+SED := sed
+FIND := find
 ifndef OBJDIR
 	OBJDIR = obj
 endif
@@ -22,8 +22,8 @@ ifndef BINDIR
 endif
 
 # external libraries used
-LIBRARIES = gnutls
-LIBRARIES_WITHOUT_PKGCONFIG = ev
+LIBRARIES := gnutls
+LIBRARIES_WITHOUT_PKGCONFIG := ev
 
 # library version requirements
 define LIBRARY_VERSION_CHECK =
@@ -37,9 +37,9 @@ endef
 ###
 
 ifdef V
-	override V =
+override V :=
 else
-	V = @
+V := @
 endif
 
 # result: cleaned name of particle
@@ -59,20 +59,20 @@ $(shell touch -r Makefile -d yesterday .depend-check)
 include .depend-check
 else
 $(shell $(RM) .depend-check)
-DEPEND_CHECK_DONE = 1
+DEPEND_CHECK_DONE := 1
 endif
 
 
 
-SRC = $(wildcard *.cpp)
+SRC := $(wildcard *.cpp)
 
-DEP_SRC = $(SRC)
+DEP_SRC := $(SRC)
 
-DIRS = $(BINDIR) $(subst ./,,$(sort $(patsubst %,$(OBJDIR)/%,$(dir $(DEP_SRC)))))
+DIRS := $(BINDIR) $(subst ./,,$(sort $(patsubst %,$(OBJDIR)/%,$(dir $(DEP_SRC)))))
 
-PARTICLE_MAKEFILES = $(patsubst %,%/dir.mk,$(PARTICLES))
+PARTICLE_MAKEFILES := $(patsubst %,%/dir.mk,$(PARTICLES))
 
-TARGET_EXECUTABLES = $(patsubst %,$(BINDIR)/%,$(TARGETS))
+TARGET_EXECUTABLES := $(patsubst %,$(BINDIR)/%,$(TARGETS))
 
 all: $(TARGET_EXECUTABLES)
 
@@ -87,8 +87,8 @@ ifdef DEPEND_CHECK_DONE
 -include $(patsubst %.cpp,$(OBJDIR)/%.o.d,$(DEP_SRC))
 endif
 
-PARTICLE_LIBRARY_NAMES = $(foreach lib,$(PARTICLES),$(call sublib_name,$(lib)))
-PARTICLE_LIBRARIES = $(foreach lib,$(PARTICLES),-l$(call submk_name,$(lib)))
+PARTICLE_LIBRARY_NAMES := $(foreach lib,$(PARTICLES),$(call sublib_name,$(lib)))
+PARTICLE_LIBRARIES := $(foreach lib,$(PARTICLES),-l$(call submk_name,$(lib)))
 
 CXXFLAGS += `pkg-config --cflags $(LIBRARIES)`
 LDFLAGS += -L $(OBJDIR) `pkg-config --libs $(LIBRARIES)` 
@@ -139,9 +139,9 @@ endef
 define generate_subdir_makefile =
 	@echo 'DIRS += $$(OBJDIR)/$(1:/dir.mk=)' > $1 
 	@echo >> $1
-	@echo '$(call submk_name,$1)_SRC = $$(wildcard $(call submk_name,$1)/*.cpp)' >> $1
+	@echo '$(call submk_name,$1)_SRC := $$(wildcard $(call submk_name,$1)/*.cpp)' >> $1
 	@echo >> $1
-	@echo '$(call submk_name,$1)_OBJ = $$(patsubst %.cpp,$$(OBJDIR)/%.o,$$($(call submk_name,$1)_SRC))' >> $1
+	@echo '$(call submk_name,$1)_OBJ := $$(patsubst %.cpp,$$(OBJDIR)/%.o,$$($(call submk_name,$1)_SRC))' >> $1
 	@echo >> $1
 	@echo 'DEP_SRC += $$($(call submk_name,$1)_SRC)' >> $1
 	@echo >> $1
