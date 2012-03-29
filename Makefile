@@ -37,19 +37,19 @@ endef
 ###
 
 ifdef V
-	V = 
+	override V =
 else
 	V = @
 endif
 
-# argument 1: makefile name or directory name of particle root
 # result: cleaned name of particle
+# argument 1: makefile name or directory name of particle root
 define submk_name =
 $(subst /,_,$(subst _,__,$(1:/dir.mk=)))
 endef
 
-# argument 1: makefile name or directory name of particle root
 # result: particles library filename
+# argument 1: makefile name or directory name of particle root
 define sublib_name =
 lib$(call submk_name,$1).a
 endef
@@ -83,9 +83,9 @@ all: $(TARGET_EXECUTABLES)
 deps:
 
 ifdef DEPEND_CHECK_DONE
--include $(PARTICLE_MAKEFILES)
+include $(PARTICLE_MAKEFILES)
 DEPFILES = $(DEP_SRC:.cpp=.d)
--include $(DEPFILES)
+include $(DEPFILES)
 endif
 
 PARTICLE_LIBRARY_NAMES = $(foreach lib,$(PARTICLES),$(call sublib_name,$(lib)))
@@ -119,26 +119,35 @@ $(DIRS):
 
 %.d: %.cpp Makefile
 	@echo -e "[DEP]\t" $<
-	$V$(CPP) -MM -MP -MT $(@:.d=.o) $(CPPFLAGS) $< | sed -e 's@^\(.*\)\.o:@\1.d $(OBJDIR)/\1.o:@' > $@
+	$(call generate_depfile,$<,$@)
 
 $(PARTICLE_MAKEFILES): Makefile
 	@echo -e "[GEN]\t" $@
 	$(call generate_subdir_makefile,$@)
 
-.PHONY: clean distclean $(DIRS) deps
+.PHONY: clean distclean depclean $(DIRS) deps
 
 
+# result: shell command to create a dependency file
+# argument 1: input file
+# argument 2: output file
+define generate_depfile =
+	$V$(CPP) -MM -MP -MT $(2:.d=.o) $(CPPFLAGS) $1 -MF $2 \
+		&& sed -e 's@^\(.*\)\.o:@\1.d $(OBJDIR)/\1.o:@' -i $2
+endef
 
+# result: shell commands to create a particle Makefile
+# argument 1: directory
 define generate_subdir_makefile =
-	@echo 'DIRS += $$(OBJDIR)/$(1:/dir.mk=)' > $@ 
-	@echo >> $@
-	@echo '$(call submk_name,$1)_SRC = $$(wildcard $(call submk_name,$1)/*.cpp)' >> $@
-	@echo >> $@
-	@echo '$(call submk_name,$1)_OBJ = $$(patsubst %.cpp,$$(OBJDIR)/%.o,$$($(call submk_name,$1)_SRC))' >> $@
-	@echo >> $@
-	@echo 'DEP_SRC += $$($(call submk_name,$1)_SRC)' >> $@
-	@echo >> $@
-	@echo '$$(OBJDIR)/$(call sublib_name,$1): $$($(call submk_name,$1)_OBJ)' >> $@
-	@echo '	@echo -e "[AR]\t" $$@' >> $@
-	@echo '	$$V$$(AR) -rcs $$@ $$^' >> $@
+	@echo 'DIRS += $$(OBJDIR)/$(1:/dir.mk=)' > $1 
+	@echo >> $1
+	@echo '$(call submk_name,$1)_SRC = $$(wildcard $(call submk_name,$1)/*.cpp)' >> $1
+	@echo >> $1
+	@echo '$(call submk_name,$1)_OBJ = $$(patsubst %.cpp,$$(OBJDIR)/%.o,$$($(call submk_name,$1)_SRC))' >> $1
+	@echo >> $1
+	@echo 'DEP_SRC += $$($(call submk_name,$1)_SRC)' >> $1
+	@echo >> $1
+	@echo '$$(OBJDIR)/$(call sublib_name,$1): $$($(call submk_name,$1)_OBJ)' >> $1
+	@echo '	@echo -e "[AR]\t" $$@' >> $1
+	@echo '	$$V$$(AR) -rcs $$@ $$^' >> $1
 endef
