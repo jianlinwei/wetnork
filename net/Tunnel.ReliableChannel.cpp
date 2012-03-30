@@ -15,7 +15,7 @@ struct ReliablePacketHeader {
 			uint8_t cid;
 			uint8_t flags;
 			uint32_t seq;
-		} header_t;
+		} __attribute__ ((packed)) header_t;
 
 		header_t header;
 
