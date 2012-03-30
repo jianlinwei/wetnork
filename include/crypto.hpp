@@ -1,25 +1,21 @@
 #ifndef CRYPTO_H
 #define CRYPTO_H
 
+#include <cstdint>
+#include <vector>
+
 class KeyFingerprint {
 	private:
-		const char* _data;
-		int _length;
-
-		void set(const char* data, int length);
+		std::vector<char> _data;
 
 	public:
-		KeyFingerprint(const char* data, int length);
-		KeyFingerprint(const KeyFingerprint& fp);
-		~KeyFingerprint();
+		KeyFingerprint(const char* data, unsigned int length);
 
 		const char* get() const;
-		const int length() const;
+		const unsigned int length() const;
 
 		bool operator<(const KeyFingerprint& other) const;
 		bool operator==(const KeyFingerprint& other) const;
-
-		KeyFingerprint& operator=(const KeyFingerprint& other);
 };
 
 #endif
