@@ -28,22 +28,22 @@ socklen_t SocketAddress::native_len() const
 
 SocketAddress::SocketAddress(const sockaddr* addr)
 {
-	const sockaddr_in* sin = reinterpret_cast<const sockaddr_in*>(addr);
+	memset(&this->addr, 0, sizeof(this->addr));
 
-	switch (sin->sin_family) {
+	switch (addr->sa_family) {
 		case AF_INET:
 			len = sizeof(sockaddr_in);
+			this->addr.in = *reinterpret_cast<const sockaddr_in*>(addr);
 			break;
 
 		case AF_INET6:
 			len = sizeof(sockaddr_in6);
+			this->addr.in6 = *reinterpret_cast<const sockaddr_in6*>(addr);
 			break;
 
 		default:
 			throw invalid_argument("Unsupported address family");
 	}
-
-	memcpy(&this->addr, addr, len);
 }
 
 SocketAddress SocketAddress::parse(const std::string& s, in_port_t port)
