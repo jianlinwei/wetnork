@@ -5,7 +5,7 @@ Packet::Packet(const boost::shared_array<const uint8_t>& data, ptrdiff_t offset,
 {
 }
 
-Packet::Packet(uint8_t* data, ptrdiff_t offset, size_t length, bool capture)
+Packet::Packet(const uint8_t* data, ptrdiff_t offset, size_t length, bool capture)
 	: _offset(offset), _length(length)
 {
 	if (capture) {

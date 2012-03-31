@@ -53,7 +53,7 @@ void CryptoContext::permissiblePeers(const set<KeyFingerprint>& peers)
 	_permissiblePeers = peers;
 }
 
-CryptoSession* CryptoContext::openSession(bool server)
+CryptoSession* CryptoContext::openSession(Stream& next, bool server)
 {
 	gnutls_session_t session;
 
@@ -71,7 +71,7 @@ CryptoSession* CryptoContext::openSession(bool server)
 		gnutls_certificate_server_set_request(session, GNUTLS_CERT_REQUIRE);
 	}
 
-	return new CryptoSession(session, *this);
+	return new CryptoSession(session, next, *this);
 }
 
 int CryptoContext::gnutls_certificate_verify(gnutls_session_t session)

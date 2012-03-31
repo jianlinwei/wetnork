@@ -11,11 +11,11 @@ using std::string;
 
 struct ReliablePacketHeader {
 	private:
-		typedef struct {
+		struct header_t {
 			uint8_t cid;
 			uint8_t flags;
 			uint32_t seq;
-		} __attribute__ ((packed)) header_t;
+		} __attribute__ ((packed));
 
 		header_t header;
 
@@ -39,7 +39,10 @@ struct ReliablePacketHeader {
 		uint8_t flags() const { return header.flags; }
 		uint32_t seq() const { return ntohl(header.seq); }
 
-		void* data() { return &header; }
+		operator Packet() const
+		{
+			return Packet(reinterpret_cast<const uint8_t*>(&header), 0, size, false);
+		}
 };
 
 Tunnel::ReliableChannel::ReliableChannel(Link& link, uint8_t cid, ev::loop_ref& loop)
@@ -67,17 +70,7 @@ void Tunnel::ReliableChannel::transmitPacket(const Packet& packet)
 {
 	ReliablePacketHeader header(cid, 0, localSeq);
 
-	iovec iov[] = {
-		{ header.data(), ReliablePacketHeader::size },
-		{ const_cast<uint8_t*>(packet.data()), packet.length() }
-	};
-
-	msghdr msg;
-	memset(&msg, 0, sizeof(msg));
-	msg.msg_iov = iov;
-	msg.msg_iovlen = 2;
-
-	int result = link.send(&msg);
+	int result = link.write(header, packet);
 	if (result < packet.length() + ReliablePacketHeader::size
 			&& !(result == -1 && errno == EAGAIN)) {
 		throw SocketException(errno, string("Could not send packet: ") + strerror(errno));
@@ -114,16 +107,7 @@ void Tunnel::ReliableChannel::readPacket(const Packet& packet)
 
 		peerSeq = peerSeq < header.seq() ? header.seq() : peerSeq;
 
-		iovec iov[] = {
-			{ ackHeader.data(), ReliablePacketHeader::size }
-		};
-
-		msghdr msg;
-		memset(&msg, 0, sizeof(msg));
-		msg.msg_iov = iov;
-		msg.msg_iovlen = 1;
-
-		link.send(&msg);
+		link.write(ackHeader);
 	}
 }
 

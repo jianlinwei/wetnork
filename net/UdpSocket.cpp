@@ -66,7 +66,7 @@ void UdpSocket::onPacketArrived(ev::io& io, int revents)
 	} else {
 		UdpLink& link = peers.at(s_addr);
 
-		link.propagatePacket(Packet(packetBuffer, 0, plen));
+		link.propagate(Packet(packetBuffer, 0, plen));
 	}
 }
 
@@ -105,7 +105,7 @@ UdpLink& UdpSocket::connect(const SocketAddress& peer)
 
 	close(fd);
 
-	peers.insert(peer, new UdpLink(*this, fd, peer, loop));
+	peers.insert(peer, new UdpLink(*this, fd, peer));
 	
 	return peers.at(peer);
 	

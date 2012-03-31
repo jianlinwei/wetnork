@@ -15,6 +15,7 @@ TunDevice::TunDevice(const int fd, const std::string& name, const ev::loop_ref& 
 	: fd(fd), _name(name), watcher(loop)
 {
 	watcher.set<TunDevice, &TunDevice::watcherEvent>(this);
+	watcher.start();
 }
 	
 const std::string TunDevice::name() const
@@ -27,39 +28,21 @@ ssize_t TunDevice::write(const Packet& packet)
 	return ::write(fd, packet.data(), packet.length());
 }
 
-bs2::connection TunDevice::connectCanRead(TunDevice::OnCanRead::slot_function_type cb)
-{
-	bs2::connection result = onCanRead.connect(cb);
-
-	if (onCanRead.num_slots() == 1) {
-		watcher.start(fd, ev::READ);
-	}
-
-	return result;
-}
-
 void TunDevice::watcherEvent(ev::io& io, int revents)
 {
-	if (onCanRead.num_slots() == 0) {
-		watcher.stop();
-		return;
-	}
+	size_t len = 1 << 16;
+	std::unique_ptr<uint8_t[]> buffer(new uint8_t[len]);
 
-	size_t len = 65536;
-	uint8_t* buffer = new uint8_t[len];
-
-	len = ::read(fd, buffer, len);
+	len = ::read(fd, buffer.get(), len);
 
 	// TODO: error handling
 
-	onCanRead(*this, Packet(buffer, 0, len));
+	propagate(Packet(buffer.release(), 0, len));
 }
 
 TunDevice::~TunDevice()
 {
-	if (!onCanRead.empty()) {
-		watcher.stop();
-	}
+	watcher.stop();
 	close(fd);
 }
 

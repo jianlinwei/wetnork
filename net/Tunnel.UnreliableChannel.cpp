@@ -26,7 +26,10 @@ struct UnreliablePacketHeader {
 
 		uint8_t cid() const { return _cid; }
 
-		void* data() { return &_cid; }
+		operator Packet() const
+		{
+			return Packet(&_cid, 0, size, false);
+		}
 };
 		
 Tunnel::UnreliableChannel::UnreliableChannel(Link& link, uint8_t cid)
@@ -38,17 +41,7 @@ ssize_t Tunnel::UnreliableChannel::writePacket(const Packet& packet)
 {
 	UnreliablePacketHeader header(cid);
 
-	iovec iov[] = {
-		{ header.data(), UnreliablePacketHeader::size },
-		{ const_cast<uint8_t*>(packet.data()), packet.length() }
-	};
-
-	msghdr msg;
-	memset(&msg, 0, sizeof(msg));
-	msg.msg_iov = iov;
-	msg.msg_iovlen = 2;
-
-	int result = link.send(&msg);
+	int result = link.write(header, packet);
 	if (result < packet.length() + UnreliablePacketHeader::size
 			&& !(result == -1 && errno == EAGAIN)) {
 		throw SocketException(errno, string("Could not send packet: ") + strerror(errno));

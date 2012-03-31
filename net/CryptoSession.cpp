@@ -1,5 +1,7 @@
 #include <stdexcept>
 #include <string.h>
+#include <memory>
+#include <functional>
 
 #include <exception.hpp>
 
@@ -7,8 +9,8 @@
 
 using namespace std;
 
-CryptoSession::CryptoSession(gnutls_session_t session, CryptoContext& context)
-	: context(context), _state(State::Invalid), session(session)
+CryptoSession::CryptoSession(gnutls_session_t session, Stream& next, CryptoContext& context)
+	: context(context), next(next), _state(State::Invalid), session(session)
 {
 	if (!session) {
 		throw std::invalid_argument("session");
@@ -20,6 +22,10 @@ CryptoSession::CryptoSession(gnutls_session_t session, CryptoContext& context)
 	gnutls_transport_set_pull_timeout_function(session, gnutls_pull_timeout);
 	gnutls_transport_set_push_function(session, gnutls_push);
 	gnutls_transport_set_vec_push_function(session, gnutls_vec_push);
+
+	namespace sp = std::placeholders;
+
+	nextOnRead = next.connectRead(bind(&CryptoSession::readPacket, this, sp::_1, sp::_2));
 }
 
 CryptoSession::~CryptoSession()
@@ -32,16 +38,6 @@ CryptoSession::~CryptoSession()
 bs2::connection CryptoSession::connectStateChanged(OnStateChanged::slot_function_type fn)
 {
 	return stateChanged.connect(fn);
-}
-
-bs2::connection CryptoSession::connectPacketDecrypted(OnPacketDecrypted::slot_function_type fn)
-{
-	return packetDecrypted.connect(fn);
-}
-
-bs2::connection CryptoSession::connectPacketEncrypted(OnPacketEncrypted::slot_function_type fn)
-{
-	return packetEncrypted.connect(fn);
 }
 
 
@@ -90,32 +86,27 @@ void CryptoSession::handleHandshake()
 
 void CryptoSession::handleData()
 {
-	static const size_t bufferSize = 1 << 14;
-	uint8_t* buffer = new uint8_t[bufferSize];
+	static const size_t bufferSize = 1 << 16;
+	unique_ptr<uint8_t[]> buffer(new uint8_t[bufferSize]);
 
-	try {
-		ssize_t ret = gnutls_record_recv(session, buffer, bufferSize);
+	ssize_t ret = gnutls_record_recv(session, buffer.get(), bufferSize);
 
-		if (ret < 0) {
-			if (ret == GNUTLS_E_REHANDSHAKE) {
-				setState(State::Renegotiating);
-				handleHandshake();
-			} else {
-				fail(ret);
-			}
-		} else if (ret == 0) {
-			if (_state != State::Closed) {
-				gnutls_bye(session, GNUTLS_SHUT_WR);
-			}
-			setState(State::Closed);
+	if (ret < 0) {
+		if (ret == GNUTLS_E_REHANDSHAKE) {
+			setState(State::Renegotiating);
+			handleHandshake();
 		} else {
-			uint8_t* packetBuffer = new uint8_t[ret];
-			memcpy(packetBuffer, buffer, ret);
-			packetDecrypted(*this, Packet(packetBuffer, 0, ret));
+			fail(ret);
 		}
-	} catch (...) {
-		delete buffer;
-		throw;
+	} else if (ret == 0) {
+		if (_state != State::Closed) {
+			gnutls_bye(session, GNUTLS_SHUT_WR);
+		}
+		setState(State::Closed);
+	} else {
+		uint8_t* packetBuffer = new uint8_t[ret];
+		memcpy(packetBuffer, buffer.get(), ret);
+		propagate(Packet(packetBuffer, 0, ret));
 	}
 }
 
@@ -162,13 +153,15 @@ void CryptoSession::close()
 	setState(State::Closed);
 }
 
-void CryptoSession::readPacket(const Packet& packet)
+
+
+void CryptoSession::readPacket(Stream& sender, const Packet& packet)
 {
-	currentPacket = unique_ptr<Packet>(new Packet(packet));
+	currentPacket.reset(new Packet(packet));
 	handlePacket();
 }
 
-bool CryptoSession::writePacket(const Packet& packet)
+ssize_t CryptoSession::write(const Packet& packet)
 {
 	if (_state != State::Open) {
 		throw InvalidOperation("Session not ready");
@@ -176,11 +169,11 @@ bool CryptoSession::writePacket(const Packet& packet)
 
 	int result = gnutls_record_send(session, packet.data(), packet.length());
 	if (result == GNUTLS_E_AGAIN) {
-		return false;
+		return -1;
 	} else if (result < 0) {
 		throw CryptoException(result, 0, gnutls_strerror(result));
 	} else {
-		return true;
+		return packet.length();
 	}
 }
 
@@ -232,22 +225,17 @@ ssize_t CryptoSession::push(const void* data, size_t size)
 {
 	uint8_t* buffer = new uint8_t[size];
 	memcpy(buffer, data, size);
-	return packetEncrypted(*this, Packet(buffer, 0, size)).get();
+	return next.write(Packet(buffer, 0, size));
 }
 
 ssize_t CryptoSession::vec_push(const giovec_t* iov, int count)
 {
-	size_t size = 0;
-	for (int i = 0; i < count; i++) {
-		size += iov[i].iov_len;
+	vector<Packet> packets;
+
+	packets.reserve(count);
+	for (int i = 0; i < count; ++i) {
+		packets.push_back(Packet(static_cast<uint8_t*>(iov[i].iov_base), 0, iov[i].iov_len));
 	}
 
-	uint8_t* buffer = new uint8_t[size];
-	size_t pos = 0;
-	for (int i = 0; i < count; i++) {
-		memcpy(buffer + pos, iov[i].iov_base, iov[i].iov_len);
-		pos += iov[i].iov_len;
-	}
-
-	return packetEncrypted(*this, Packet(buffer, 0, size)).get();
+	return next.write(packets.begin(), packets.end());
 }

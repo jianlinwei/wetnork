@@ -44,12 +44,12 @@ class CryptoContext : boost::noncopyable {
 		const std::set<KeyFingerprint>& permissiblePeers() const;
 		void permissiblePeers(const std::set<KeyFingerprint>& peers);
 
-		CryptoSession* openSession(bool server);
+		CryptoSession* openSession(Stream& next, bool server);
 };
 
 
 
-class CryptoSession : boost::noncopyable {
+class CryptoSession : public Stream, boost::noncopyable {
 	friend class CryptoContext;
 	public:
 		enum class State {
@@ -62,8 +62,6 @@ class CryptoSession : boost::noncopyable {
 		};
 
 		typedef Signal<void (CryptoSession& self, State oldState)> OnStateChanged;
-		typedef Signal<void (CryptoSession& self, const Packet& packet)> OnPacketDecrypted;
-		typedef Signal<ssize_t (CryptoSession& self, const Packet& packet)> OnPacketEncrypted;
 
 	private:
 		// non-fatal errors:
@@ -81,12 +79,11 @@ class CryptoSession : boost::noncopyable {
 		//	* send handshake_failure when appropriate
 		//	* reject connections with cert changes
 		CryptoContext& context;
+		Stream& next;
+		bs2::scoped_connection nextOnRead;
 
 		OnStateChanged stateChanged;
 		State _state;
-
-		OnPacketDecrypted packetDecrypted;
-		OnPacketEncrypted packetEncrypted;
 
 		gnutls_session_t session;
 
@@ -109,7 +106,9 @@ class CryptoSession : boost::noncopyable {
 		ssize_t push(const void* data, size_t size);
 		ssize_t vec_push(const giovec_t* iov, int count);
 
-		CryptoSession(gnutls_session_t sesssion, CryptoContext& context);
+		void readPacket(Stream& sender, const Packet& packet);
+
+		CryptoSession(gnutls_session_t sesssion, Stream& next, CryptoContext& context);
 
 	public:
 		~CryptoSession();
@@ -118,11 +117,7 @@ class CryptoSession : boost::noncopyable {
 
 		bs2::connection connectStateChanged(OnStateChanged::slot_function_type fn);
 
-		bs2::connection connectPacketDecrypted(OnPacketDecrypted::slot_function_type fn);
-		void readPacket(const Packet& packet);
-
-		bs2::connection connectPacketEncrypted(OnPacketEncrypted::slot_function_type fn);
-		bool writePacket(const Packet& packet);
+		ssize_t write(const Packet& packet) override;
 
 		void open();
 		void renegotiate();

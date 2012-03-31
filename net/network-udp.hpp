@@ -20,23 +20,22 @@ class UdpSocket;
 class UdpLink : public Link {
 	friend class UdpSocket;
 	private:
-		ev::loop_ref& loop;
 		SocketAddress peer;
 		UdpSocket& parent;
 
 	protected:
 		int fd;
 
-		UdpLink(UdpSocket& parent, int fd, const SocketAddress& peer, ev::loop_ref& loop);
+		UdpLink(UdpSocket& parent, int fd, const SocketAddress& peer);
 
-		void propagatePacket(const Packet& packet);
+		void propagate(const Packet& packet) override;
 
 	public:
 		~UdpLink() override;
 
 		bs2::connection connectStateChanged(OnStateChanged::slot_function_type cb) override;
 
-		ssize_t send(const msghdr* msg) override;
+		ssize_t write(const Packet& packet) override;
 
 		void close() override;
 };

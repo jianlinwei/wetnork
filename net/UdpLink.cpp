@@ -12,42 +12,29 @@
 
 using namespace std;
 
-UdpLink::UdpLink(UdpSocket& parent, int fd, const SocketAddress& peer, ev::loop_ref& loop)
-	: loop(loop), peer(peer), parent(parent), fd(fd)
+UdpLink::UdpLink(UdpSocket& parent, int fd, const SocketAddress& peer)
+	: peer(peer), parent(parent), fd(fd)
 {
 	_state = State::Open;
 }
 
 UdpLink::~UdpLink()
 {
-	if (_state == State::Opening || _state == State::Open) {
-		close();
-	}
 	parent.removeLink(peer);
 }
 
-void UdpLink::propagatePacket(const Packet& packet)
+void UdpLink::propagate(const Packet& packet)
 {
 	if (_state == State::Closed) {
 		return;
 	}
 
-	if (packet.length() == 0) {
-		throw InvalidOperation("Packet too short");
-	}
-
-	receive(*this, packet);
+	Link::propagate(packet);
 }
 
-ssize_t UdpLink::send(const msghdr* msg)
+ssize_t UdpLink::write(const Packet& packet)
 {
-	SocketAddress peer = this->peer;
-
-	msghdr actual = *msg;
-	actual.msg_name = const_cast<sockaddr*>(peer.native());
-	actual.msg_namelen = peer.native_len();
-
-	return sendmsg(fd, &actual, MSG_DONTWAIT);
+	return sendto(fd, packet.data(), packet.length(), 0, peer.native(), peer.native_len());
 }
 
 void UdpLink::close()

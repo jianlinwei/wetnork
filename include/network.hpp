@@ -5,7 +5,7 @@
 #include <netinet/in.h>
 #include <string>
 #include <boost/smart_ptr/shared_array.hpp>
-#include <list>
+#include <array>
 #include <boost/utility.hpp>
 
 #include <signal.hpp>
@@ -51,7 +51,7 @@ class Packet {
 		Packet(const boost::shared_array<const uint8_t>& data, ptrdiff_t offset, size_t length);
 
 	public:
-		Packet(uint8_t* data, ptrdiff_t offset, size_t length, bool capture = true);
+		Packet(const uint8_t* data, ptrdiff_t offset, size_t length, bool capture = true);
 
 		const uint8_t* data() const;
 
@@ -70,14 +70,41 @@ class Stream : boost::noncopyable {
 		OnRead read;
 
 	protected:
-		void propagate(const Packet& packet);
+		virtual void propagate(const Packet& packet);
 
 	public:
 		virtual ~Stream();
 
-		virtual size_t write(const Packet& packet) = 0;
+		virtual ssize_t write(const Packet& packet) = 0;
 
-		bs2::connection connectRead(OnRead::slot_function_type fn);
+		template<class Iterator>
+		ssize_t write(const Iterator& begin, const Iterator& end)
+		{
+			size_t size = 0;
+			for (auto it = begin; it != end; ++it) {
+				size += it->length();
+			}
+
+			std::unique_ptr<uint8_t[]> buffer(new uint8_t[size]);
+			size_t offset = 0;
+			for (auto it = begin; it != end; ++it) {
+				memcpy(buffer.get() + offset, it->data(), it->length());
+				offset += it->length();
+			}
+
+			return write(Packet(buffer.release(), 0, size));
+		}
+
+		template<class... Args>
+		auto write(const Args&... args)
+			-> typename std::pair<decltype(std::make_tuple(static_cast<const Packet&>(args)...)), ssize_t>::second_type
+		{
+			std::array<Packet, sizeof...(Args)> packets {{ args... }};
+
+			return write(packets.begin(), packets.end());
+		}
+
+		virtual bs2::connection connectRead(OnRead::slot_function_type fn);
 };
 
 #endif

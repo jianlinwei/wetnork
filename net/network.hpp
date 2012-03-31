@@ -9,6 +9,9 @@
 #include <string>
 #include <arpa/inet.h>
 #include <boost/shared_array.hpp>
+#include <boost/utility.hpp>
+#include <array>
+#include <tuple>
 
 #include <exception.hpp>
 #include <network.hpp>
@@ -27,7 +30,7 @@ class SocketException : public Exception {
 
 
 
-class Link {
+class Link : public Stream {
 	public:
 		enum class State {
 			Invalid,
@@ -37,12 +40,10 @@ class Link {
 		};
 
 		typedef Signal<void (Link& sender, State oldState)> OnStateChanged;
-		typedef Signal<void (Link& sender, const Packet& packet)> OnReceive;
 
 	protected:
 		State _state;
 		OnStateChanged stateChanged;
-		OnReceive receive;
 
 		virtual void setState(State state);
 
@@ -52,10 +53,6 @@ class Link {
 		virtual State state() const;
 
 		virtual bs2::connection connectStateChanged(OnStateChanged::slot_function_type cb);
-
-		virtual bs2::connection connectReceive(OnReceive::slot_function_type cb);
-
-		virtual ssize_t send(const msghdr* msg) = 0;
 
 		virtual void close() = 0;
 };

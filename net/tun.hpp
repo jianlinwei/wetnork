@@ -7,18 +7,13 @@
 #include <boost/utility.hpp>
 #include <boost/signals2.hpp>
 
-#include "network.hpp"
+#include <network.hpp>
 
-class TunDevice : boost::noncopyable {
-	public:
-		typedef Signal<void (TunDevice& sender, const Packet& packet)> OnCanRead;
-
+class TunDevice : public Stream, boost::noncopyable {
 	private:
 		const int fd;
 		const std::string _name;
 		ev::io watcher;
-
-		OnCanRead onCanRead;
 
 		void watcherEvent(ev::io& io, int revents);
 
@@ -29,9 +24,7 @@ class TunDevice : boost::noncopyable {
 
 		const std::string name() const;
 
-		ssize_t write(const Packet& packet);
-
-		bs2::connection connectCanRead(OnCanRead::slot_function_type cb);
+		ssize_t write(const Packet& packet) override;
 };
 
 #endif
