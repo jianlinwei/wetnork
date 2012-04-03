@@ -46,8 +46,7 @@ struct ReliablePacketHeader {
 };
 
 Tunnel::ReliableChannel::ReliableChannel(Link& link, uint8_t cid, ev::loop_ref& loop)
-	: Channel(link, cid), timeout(loop), inFlightPacket(),
-		localSeq(0), peerSeq(0)
+	: Channel(link, cid), timeout(loop), inFlightPacket(), localSeq(0), peerSeq(0)
 {
 	timeout.set<ReliableChannel, &ReliableChannel::onTimeout>(this);
 }
@@ -92,20 +91,19 @@ void Tunnel::ReliableChannel::readPacket(const Packet& packet)
 {
 	ReliablePacketHeader header(packet.data());
 
-	if (header.flags() & ReliablePacketHeader::ACK
-			&& localSeq == header.seq()) {
+	if (header.flags() & ReliablePacketHeader::ACK && localSeq == header.seq()) {
 		localSeq++;
 		inFlightPacket.reset();
+		timeout.stop();
 
 		canSend(*this);
 	} else if (header.flags() == 0) {
 		ReliablePacketHeader ackHeader(cid, ReliablePacketHeader::ACK, header.seq());
 
 		if (peerSeq < header.seq()) {
+			peerSeq = header.seq();
 			receive(*this, packet.skip(ReliablePacketHeader::size));
 		}
-
-		peerSeq = peerSeq < header.seq() ? header.seq() : peerSeq;
 
 		link.write(ackHeader);
 	}
