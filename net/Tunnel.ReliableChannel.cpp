@@ -5,7 +5,7 @@
 #include <netinet/in.h>
 #include <errno.h>
 
-#include "tunnel.hpp"
+#include "tunnel-channels.hpp"
 
 using std::string;
 

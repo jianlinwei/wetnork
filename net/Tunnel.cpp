@@ -3,6 +3,7 @@
 #include <exception.hpp>
 
 #include "tunnel.hpp"
+#include "tunnel-channels.hpp"
 
 using namespace std;
 

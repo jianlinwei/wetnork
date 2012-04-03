@@ -1,4 +1,4 @@
-#include "tunnel.hpp"
+#include "tunnel-channels.hpp"
 
 Tunnel::Channel::~Channel()
 {
