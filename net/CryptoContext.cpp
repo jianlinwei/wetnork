@@ -102,7 +102,6 @@ int CryptoContext::gnutls_certificate_verify(gnutls_session_t session)
 	if (!result) {
 		char fpr[128];
 		size_t fprLen = sizeof(fpr);
-		int result;
 		if (gnutls_openpgp_crt_get_fingerprint(cert, fpr, &fprLen)) {
 			result = 1;
 		} else {

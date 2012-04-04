@@ -48,7 +48,7 @@ SocketAddress::SocketAddress(const sockaddr* addr)
 
 SocketAddress SocketAddress::parse(const std::string& s, in_port_t port)
 {
-	if (s.find(':') != -1) {
+	if (s.find(':') != std::string::npos) {
 		sockaddr_in6 addr;
 		memset(&addr, 0, sizeof(addr));
 		if (inet_pton(AF_INET6, s.c_str(), &addr.sin6_addr) < 0) {
