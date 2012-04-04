@@ -161,7 +161,7 @@ void CryptoSession::readPacket(Stream& sender, const Packet& packet)
 	handlePacket();
 }
 
-ssize_t CryptoSession::write(const Packet& packet)
+bool CryptoSession::write(const Packet& packet)
 {
 	if (_state != State::Open) {
 		throw InvalidOperation("Session not ready");
@@ -169,11 +169,11 @@ ssize_t CryptoSession::write(const Packet& packet)
 
 	int result = gnutls_record_send(session, packet.data(), packet.length());
 	if (result == GNUTLS_E_AGAIN) {
-		return -1;
+		return false;
 	} else if (result < 0) {
 		throw CryptoException(result, 0, gnutls_strerror(result));
 	} else {
-		return packet.length();
+		return true;
 	}
 }
 

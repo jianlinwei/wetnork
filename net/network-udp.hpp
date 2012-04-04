@@ -35,7 +35,7 @@ class UdpLink : public Link {
 
 		bs2::connection connectStateChanged(OnStateChanged::slot_function_type cb) override;
 
-		ssize_t write(const Packet& packet) override;
+		bool write(const Packet& packet) override;
 
 		void close() override;
 };

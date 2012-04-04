@@ -24,7 +24,7 @@ class TunDevice : public Stream, boost::noncopyable {
 
 		const std::string name() const;
 
-		ssize_t write(const Packet& packet) override;
+		bool write(const Packet& packet) override;
 };
 
 #endif

@@ -23,9 +23,11 @@ const std::string TunDevice::name() const
 	return _name;
 }
 
-ssize_t TunDevice::write(const Packet& packet)
+bool TunDevice::write(const Packet& packet)
 {
-	return ::write(fd, packet.data(), packet.length());
+	int err = ::write(fd, packet.data(), packet.length());
+
+	return err >= 0;
 }
 
 void TunDevice::watcherEvent(ev::io& io, int revents)

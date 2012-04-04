@@ -117,7 +117,7 @@ class CryptoSession : public Stream, boost::noncopyable {
 
 		bs2::connection connectStateChanged(OnStateChanged::slot_function_type fn);
 
-		ssize_t write(const Packet& packet) override;
+		bool write(const Packet& packet) override;
 
 		void open();
 		void renegotiate();

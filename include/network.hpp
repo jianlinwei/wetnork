@@ -75,10 +75,10 @@ class Stream : boost::noncopyable {
 	public:
 		virtual ~Stream();
 
-		virtual ssize_t write(const Packet& packet) = 0;
+		virtual bool write(const Packet& packet) = 0;
 
 		template<class Iterator>
-		ssize_t write(const Iterator& begin, const Iterator& end)
+		bool write(const Iterator& begin, const Iterator& end)
 		{
 			size_t size = 0;
 			for (auto it = begin; it != end; ++it) {
@@ -97,7 +97,7 @@ class Stream : boost::noncopyable {
 
 		template<class... Args>
 		auto write(const Args&... args)
-			-> typename std::pair<decltype(std::make_tuple(static_cast<const Packet&>(args)...)), ssize_t>::second_type
+			-> typename std::pair<decltype(std::make_tuple(static_cast<const Packet&>(args)...)), bool>::second_type
 		{
 			std::array<Packet, sizeof...(Args)> packets {{ args... }};
 

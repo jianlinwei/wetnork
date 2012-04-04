@@ -32,9 +32,17 @@ void UdpLink::propagate(const Packet& packet)
 	Link::propagate(packet);
 }
 
-ssize_t UdpLink::write(const Packet& packet)
+bool UdpLink::write(const Packet& packet)
 {
-	return sendto(fd, packet.data(), packet.length(), 0, peer.native(), peer.native_len());
+	int err = sendto(fd, packet.data(), packet.length(), 0, peer.native(), peer.native_len());
+
+	if (err > 0) {
+		return true;
+	} else if (err == EAGAIN || err == EWOULDBLOCK) {
+		return false;
+	} else {
+		throw SocketException(errno, strerror(errno));
+	}
 }
 
 void UdpLink::close()
