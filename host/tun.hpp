@@ -16,6 +16,8 @@ class TunRegistry {
 		TunRegistry(const TunRegistry&) = delete;
 		TunRegistry& operator=(const TunRegistry&) = delete;
 
+		~TunRegistry();
+
 		int findDevice(const std::string& name) const;
 
 		std::string createDevice(const std::string& nameTemplate);

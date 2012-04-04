@@ -13,6 +13,13 @@
 
 using namespace std;
 
+TunRegistry::~TunRegistry()
+{
+	for (auto& it : devices) {
+		close(it.second);
+	}
+}
+
 int TunRegistry::findDevice(const string& name) const
 {
 	if (!devices.count(name)) {
