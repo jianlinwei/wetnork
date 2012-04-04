@@ -104,9 +104,9 @@ void CryptoSession::handleData()
 		}
 		setState(State::Closed);
 	} else {
-		uint8_t* packetBuffer = new uint8_t[ret];
-		memcpy(packetBuffer, buffer.get(), ret);
-		propagate(Packet(packetBuffer, 0, ret));
+		unique_ptr<uint8_t[]> packetBuffer(new uint8_t[ret]);
+		memcpy(packetBuffer.get(), buffer.get(), ret);
+		propagate(Packet(packetBuffer.get(), 0, ret));
 	}
 }
 

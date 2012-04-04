@@ -43,19 +43,17 @@ void UdpSocket::onPacketArrived(ev::io& io, int revents)
 
 	// look at the error queue, too
 
-	ssize_t plen = recvfrom(fd, nullptr, 0, MSG_PEEK | MSG_TRUNC,
-			reinterpret_cast<sockaddr*>(&addr), &addrlen);
+	uint8_t buffer[1 << 16];
+
+	ssize_t plen = recvfrom(fd, buffer, sizeof(buffer), 0, reinterpret_cast<sockaddr*>(&addr), &addrlen);
 	if (plen < 0) {
 		// no error will happen here. trust me
 		return;
 	}
 
-	uint8_t* packetBuffer = new (nothrow) uint8_t[plen];
-	if (!packetBuffer) {
-		throw bad_alloc();
-	}
+	std::unique_ptr<uint8_t[]> packetBuffer(new uint8_t[plen]);
 
-	recv(fd, packetBuffer, plen, 0);
+	memcpy(packetBuffer.get(), buffer, plen);
 
 	SocketAddress s_addr(reinterpret_cast<sockaddr*>(&addr));
 
@@ -66,7 +64,7 @@ void UdpSocket::onPacketArrived(ev::io& io, int revents)
 	} else {
 		UdpLink& link = peers.at(s_addr);
 
-		link.propagate(Packet(packetBuffer, 0, plen));
+		link.propagate(Packet(packetBuffer.release(), 0, plen));
 	}
 }
 

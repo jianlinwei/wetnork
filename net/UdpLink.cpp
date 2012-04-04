@@ -40,11 +40,10 @@ restart:
 	if (err >= 0) {
 		return true;
 	} else {
+		if (errno == EAGAIN || errno == EWOULDBLOCK) {
+			return false;
+		}
 		switch (errno) {
-			case EAGAIN:
-			case EWOULDBLOCK:
-				return false;
-
 			case EINTR:
 				goto restart;
 

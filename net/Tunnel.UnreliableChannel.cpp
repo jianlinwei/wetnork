@@ -41,13 +41,7 @@ ssize_t Tunnel::UnreliableChannel::writePacket(const Packet& packet)
 {
 	UnreliablePacketHeader header(cid);
 
-	int result = link.write(header, packet);
-	if (result < packet.length() + UnreliablePacketHeader::size
-			&& !(result == -1 && errno == EAGAIN)) {
-		throw SocketException(errno, string("Could not send packet: ") + strerror(errno));
-	}
-
-	return true;
+	return link.write(header, packet);
 }
 
 void Tunnel::UnreliableChannel::readPacket(const Packet& packet)

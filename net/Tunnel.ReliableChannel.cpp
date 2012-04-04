@@ -69,11 +69,7 @@ void Tunnel::ReliableChannel::transmitPacket(const Packet& packet)
 {
 	ReliablePacketHeader header(cid, 0, localSeq);
 
-	int result = link.write(header, packet);
-	if (result < packet.length() + ReliablePacketHeader::size
-			&& !(result == -1 && errno == EAGAIN)) {
-		throw SocketException(errno, string("Could not send packet: ") + strerror(errno));
-	}
+	link.write(header, packet);
 }
 
 ssize_t Tunnel::ReliableChannel::writePacket(const Packet& packet)
