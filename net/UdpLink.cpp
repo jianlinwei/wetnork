@@ -34,14 +34,29 @@ void UdpLink::propagate(const Packet& packet)
 
 bool UdpLink::write(const Packet& packet)
 {
+restart:
 	int err = sendto(fd, packet.data(), packet.length(), 0, peer.native(), peer.native_len());
 
-	if (err > 0) {
+	if (err >= 0) {
 		return true;
-	} else if (err == EAGAIN || err == EWOULDBLOCK) {
-		return false;
 	} else {
-		throw SocketException(errno, strerror(errno));
+		switch (errno) {
+			case EAGAIN:
+			case EWOULDBLOCK:
+				return false;
+
+			case EINTR:
+				goto restart;
+
+			case EHOSTUNREACH:
+			case ENETUNREACH:
+			case ENETDOWN:
+				// TODO this should raise some event
+				return false;
+
+			default:
+				throw SocketException(errno, strerror(errno));
+		}
 	}
 }
 
