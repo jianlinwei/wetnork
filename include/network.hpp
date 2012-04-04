@@ -6,7 +6,6 @@
 #include <string>
 #include <boost/smart_ptr/shared_array.hpp>
 #include <array>
-#include <boost/utility.hpp>
 
 #include <signal.hpp>
 
@@ -62,7 +61,7 @@ class Packet {
 
 
 
-class Stream : boost::noncopyable {
+class Stream {
 	public:
 		typedef Signal<void (Stream& sender, const Packet& packet)> OnRead;
 
@@ -72,7 +71,12 @@ class Stream : boost::noncopyable {
 	protected:
 		virtual void propagate(const Packet& packet);
 
+		Stream() = default;
+
 	public:
+		Stream(const Stream&) = delete;
+		Stream& operator=(const Stream&) = delete;
+
 		virtual ~Stream();
 
 		virtual bool write(const Packet& packet) = 0;

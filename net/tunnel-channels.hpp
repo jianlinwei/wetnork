@@ -10,7 +10,7 @@
 
 #include "tunnel.hpp"
 
-class Tunnel::Channel : boost::noncopyable {
+class Tunnel::Channel {
 	public:
 		typedef Signal<void (Channel& sender, const Packet& packet)> OnReceive;
 		typedef Signal<void (Channel& sender)> OnCanSend;
@@ -25,6 +25,9 @@ class Tunnel::Channel : boost::noncopyable {
 		Channel(Link& link, uint8_t cid);
 
 	public:
+		Channel(const Channel&) = delete;
+		Channel& operator=(const Channel&) = delete;
+		
 		virtual ~Channel();
 
 		virtual void readPacket(const Packet& packet) = 0;
@@ -36,6 +39,9 @@ class Tunnel::Channel : boost::noncopyable {
 
 class Tunnel::UnreliableChannel : public Channel {
 	public:
+		UnreliableChannel(const UnreliableChannel&) = delete;
+		UnreliableChannel& operator=(const UnreliableChannel&) = delete;
+		
 		UnreliableChannel(Link& link, uint8_t cid);
 
 		void readPacket(const Packet& packet) override;
@@ -54,6 +60,9 @@ class Tunnel::ReliableChannel : public Channel {
 		void transmitPacket(const Packet& packet);
 
 	public:
+		ReliableChannel(const ReliableChannel&) = delete;
+		ReliableChannel& operator=(const ReliableChannel&) = delete;
+		
 		ReliableChannel(Link& link, uint8_t cid, ev::loop_ref& loop);
 
 		void readPacket(const Packet& packet) override;

@@ -1,7 +1,6 @@
 #ifndef NET_TUNNEL_H
 #define NET_TUNNEL_H
 
-#include <boost/utility.hpp>
 #include <boost/ptr_container/ptr_map.hpp>
 #include <ev++.h>
 #include <memory>
@@ -10,7 +9,7 @@
 
 #include "network.hpp"
 
-class Tunnel : boost::noncopyable {
+class Tunnel {
 	private:
 		class Channel;
 		class UnreliableChannel;
@@ -26,6 +25,9 @@ class Tunnel : boost::noncopyable {
 		void propagate(const Packet& packet);
 
 	public:
+		Tunnel(const Tunnel&) = delete;
+		Tunnel& operator=(const Tunnel&) = delete;
+
 		Tunnel(ev::loop_ref& loop, Link* link);
 
 		virtual ~Tunnel();

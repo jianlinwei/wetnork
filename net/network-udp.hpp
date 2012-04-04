@@ -31,6 +31,9 @@ class UdpLink : public Link {
 		void propagate(const Packet& packet) override;
 
 	public:
+		UdpLink(const UdpLink&) = delete;
+		UdpLink& operator=(const UdpLink&) = delete;
+
 		~UdpLink() override;
 
 		bs2::connection connectStateChanged(OnStateChanged::slot_function_type cb) override;
@@ -40,7 +43,7 @@ class UdpLink : public Link {
 		void close() override;
 };
 
-class UdpSocket : public Socket, boost::noncopyable {
+class UdpSocket : public Socket {
 	friend class UdpLink;
 	private:
 		typedef boost::ptr_map<const SocketAddress, UdpLink> peers_map;
@@ -58,6 +61,9 @@ class UdpSocket : public Socket, boost::noncopyable {
 		void removeLink(const SocketAddress& link);
 
 	public:
+		UdpSocket(const UdpSocket&) = delete;
+		UdpSocket& operator=(const UdpSocket&) = delete;
+
 		~UdpSocket() override;
 
 		static UdpSocket* create(const SocketAddress& addr, ev::loop_ref& loop);

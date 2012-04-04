@@ -1,7 +1,6 @@
 #ifndef NET_CRYPTO_H
 #define NET_CRYPTO_H
 
-#include <boost/utility.hpp>
 #include <gnutls/gnutls.h>
 #include <gnutls/openpgp.h>
 #include <memory>
@@ -29,7 +28,7 @@ class CryptoException : public Exception {
 
 class CryptoSession;
 
-class CryptoContext : boost::noncopyable {
+class CryptoContext {
 	private:
 		gnutls_certificate_credentials_t credentials;
 
@@ -38,6 +37,9 @@ class CryptoContext : boost::noncopyable {
 		static int gnutls_certificate_verify(gnutls_session_t session);
 
 	public:
+		CryptoContext(const CryptoContext&) = delete;
+		CryptoContext& operator=(const CryptoContext&) = delete;
+
 		CryptoContext(const std::string& pubKey, const std::string& privKey, const std::string& subkey = "auto");
 		~CryptoContext();
 
@@ -49,7 +51,7 @@ class CryptoContext : boost::noncopyable {
 
 
 
-class CryptoSession : public Stream, boost::noncopyable {
+class CryptoSession : public Stream {
 	friend class CryptoContext;
 	public:
 		enum class State {
@@ -111,6 +113,9 @@ class CryptoSession : public Stream, boost::noncopyable {
 		CryptoSession(gnutls_session_t sesssion, Stream& next, CryptoContext& context);
 
 	public:
+		CryptoSession(const CryptoSession&) = delete;
+		CryptoSession& operator=(const CryptoSession&) = delete;
+
 		~CryptoSession();
 
 		State state() const;

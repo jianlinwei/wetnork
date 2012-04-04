@@ -4,12 +4,10 @@
 #include <string>
 #include <sys/types.h>
 #include <ev++.h>
-#include <boost/utility.hpp>
-#include <boost/signals2.hpp>
 
 #include <network.hpp>
 
-class TunDevice : public Stream, boost::noncopyable {
+class TunDevice : public Stream {
 	private:
 		const int fd;
 		const std::string _name;
@@ -18,6 +16,9 @@ class TunDevice : public Stream, boost::noncopyable {
 		void watcherEvent(ev::io& io, int revents);
 
 	public:
+		TunDevice(const TunDevice&) = delete;
+		TunDevice& operator=(const TunDevice&) = delete;
+
 		TunDevice(const int fd, const std::string& name, const ev::loop_ref& loop);
 
 		~TunDevice();
