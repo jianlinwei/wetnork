@@ -82,7 +82,8 @@ class Stream {
 		virtual bool write(const Packet& packet) = 0;
 
 		template<class Iterator>
-		bool write(const Iterator& begin, const Iterator& end)
+		auto write(const Iterator& begin, const Iterator& end)
+			-> typename std::enable_if<std::is_same<typename std::decay<decltype(*begin)>::type, Packet>::value, bool>::type
 		{
 			size_t size = 0;
 			for (auto it = begin; it != end; ++it) {
