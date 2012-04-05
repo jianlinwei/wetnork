@@ -50,7 +50,11 @@ class Packet {
 		Packet(const boost::shared_array<const uint8_t>& data, ptrdiff_t offset, size_t length);
 
 	public:
-		Packet(const uint8_t* data, ptrdiff_t offset, size_t length, bool capture = true);
+		static struct {} NoCapture;
+
+		Packet(const uint8_t* data, ptrdiff_t offset, size_t length);
+
+		Packet(const uint8_t* data, ptrdiff_t offset, size_t length, decltype(NoCapture));
 
 		const uint8_t* data() const;
 
