@@ -5,7 +5,7 @@
 #include <ev++.h>
 #include <netinet/in.h>
 #include <map>
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 #include <arpa/inet.h>
 #include <boost/shared_array.hpp>

@@ -1,5 +1,5 @@
 #include <stdexcept>
-#include <string.h>
+#include <cstring>
 
 #include <crypto.hpp>
 #include <exception.hpp>

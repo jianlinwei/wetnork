@@ -6,7 +6,7 @@
 #include <netinet/in.h>
 #include <boost/signals2.hpp>
 #include <boost/ptr_container/ptr_map.hpp>
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 #include <arpa/inet.h>
 #include <boost/shared_array.hpp>

@@ -1,8 +1,8 @@
-#include <stdlib.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <errno.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstddef>
+#include <cstdint>
+#include <cerrno>
+#include <cstring>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <stdexcept>

@@ -1,9 +1,9 @@
-#include <stdlib.h>
-#include <stddef.h>
-#include <stdint.h>
+#include <cstdlib>
+#include <cstddef>
+#include <cstdint>
+#include <cerrno>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <errno.h>
 
 #include "tunnel-channels.hpp"
 
@@ -41,7 +41,7 @@ struct ReliablePacketHeader {
 
 		operator Packet() const
 		{
-			return Packet(reinterpret_cast<const uint8_t*>(&header), 0, size, false);
+			return Packet(reinterpret_cast<const uint8_t*>(&header), 0, size, Packet::NoCapture);
 		}
 };
 

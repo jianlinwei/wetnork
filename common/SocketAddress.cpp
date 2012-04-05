@@ -1,10 +1,10 @@
-#include <stdlib.h>
-#include <stddef.h>
-#include <stdint.h>
+#include <cstdlib>
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <stdexcept>
-#include <string.h>
 #include <arpa/inet.h>
 
 #include <network.hpp>

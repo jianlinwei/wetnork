@@ -1,4 +1,5 @@
-#include <stdlib.h>
+#include <cstdlib>
+#include <cstring>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <linux/if.h>
@@ -6,8 +7,6 @@
 #include <errno.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
-#include <unistd.h>
-#include <string.h>
 
 #include "tun.hpp"
 

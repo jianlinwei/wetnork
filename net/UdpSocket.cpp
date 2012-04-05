@@ -1,9 +1,9 @@
-#include <stdlib.h>
-#include <stddef.h>
-#include <stdint.h>
+#include <cstdlib>
+#include <cstddef>
+#include <cstdint>
+#include <cerrno>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <errno.h>
 
 #include "network.hpp"
 #include "network-udp.hpp"
