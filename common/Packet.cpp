@@ -1,17 +1,17 @@
 #include "network.hpp"
 
-Packet::Packet(const boost::shared_array<const uint8_t>& data, ptrdiff_t offset, size_t length)
+Packet::Packet(const std::shared_ptr<const uint8_t>& data, ptrdiff_t offset, size_t length)
 	: _data(data), _offset(offset), _length(length)
 {
 }
 
 Packet::Packet(const uint8_t* data, ptrdiff_t offset, size_t length)
-	: _data(data), _offset(offset), _length(length)
+	: _data(data, ArrayDelete), _offset(offset), _length(length)
 {
 }
 
 Packet::Packet(const uint8_t* data, ptrdiff_t offset, size_t length, decltype(NoCapture))
-	: _data(data, NullDeleter()), _offset(offset), _length(length)
+	: _data(data, NullDelete), _offset(offset), _length(length)
 {
 }
 
@@ -32,4 +32,15 @@ Packet Packet::skip(size_t bytes) const
 	}
 
 	return Packet(_data, _offset + bytes, _length - bytes);
+}
+
+
+
+void Packet::NullDelete(const uint8_t*)
+{
+}
+
+void Packet::ArrayDelete(const uint8_t* ptr)
+{
+	delete[] ptr;
 }

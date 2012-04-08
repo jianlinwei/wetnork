@@ -4,7 +4,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <string>
-#include <boost/smart_ptr/shared_array.hpp>
+#include <memory>
 #include <array>
 
 #include <signal.hpp>
@@ -39,15 +39,14 @@ struct SocketAddress {
 
 class Packet {
 	private:
-		struct NullDeleter {
-			void operator()(const uint8_t*) {}
-		};
+		static void NullDelete(const uint8_t*);
+		static void ArrayDelete(const uint8_t*);
 
-		boost::shared_array<const uint8_t> _data;
+		std::shared_ptr<const uint8_t> _data;
 		ptrdiff_t _offset;
 		size_t _length;
 
-		Packet(const boost::shared_array<const uint8_t>& data, ptrdiff_t offset, size_t length);
+		Packet(const std::shared_ptr<const uint8_t>& data, ptrdiff_t offset, size_t length);
 
 	public:
 		static struct {} NoCapture;
