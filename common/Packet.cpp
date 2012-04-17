@@ -10,7 +10,7 @@ Packet::Packet(const uint8_t* data, ptrdiff_t offset, size_t length)
 {
 }
 
-Packet::Packet(const uint8_t* data, ptrdiff_t offset, size_t length, decltype(NoCapture))
+Packet::Packet(const uint8_t* data, ptrdiff_t offset, size_t length, nocapture_t)
 	: _data(data, NullDelete), _offset(offset), _length(length)
 {
 }

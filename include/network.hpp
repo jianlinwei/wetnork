@@ -49,11 +49,12 @@ class Packet {
 		Packet(const std::shared_ptr<const uint8_t>& data, ptrdiff_t offset, size_t length);
 
 	public:
-		static struct {} NoCapture;
+		struct nocapture_t {};
+		static constexpr nocapture_t NoCapture = {};
 
 		Packet(const uint8_t* data, ptrdiff_t offset, size_t length);
 
-		Packet(const uint8_t* data, ptrdiff_t offset, size_t length, decltype(NoCapture));
+		Packet(const uint8_t* data, ptrdiff_t offset, size_t length, nocapture_t);
 
 		const uint8_t* data() const;
 
