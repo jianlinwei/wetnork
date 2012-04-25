@@ -32,8 +32,8 @@ struct UnreliablePacketHeader {
 		}
 };
 		
-Tunnel::UnreliableChannel::UnreliableChannel(Link& link, uint8_t cid)
-	: Channel(link, cid)
+Tunnel::UnreliableChannel::UnreliableChannel(Stream& next, uint8_t cid)
+	: Channel(next, cid)
 {
 }
 
@@ -41,7 +41,7 @@ ssize_t Tunnel::UnreliableChannel::writePacket(const Packet& packet)
 {
 	UnreliablePacketHeader header(cid);
 
-	return link.write(header, packet);
+	return next.write(header, packet);
 }
 
 void Tunnel::UnreliableChannel::readPacket(const Packet& packet)

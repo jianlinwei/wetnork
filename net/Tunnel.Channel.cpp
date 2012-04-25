@@ -1,5 +1,10 @@
 #include "tunnel-channels.hpp"
 
+Tunnel::Channel::Channel(Stream& next, uint8_t cid)
+	: next(next), cid(cid)
+{
+}
+
 Tunnel::Channel::~Channel()
 {
 }

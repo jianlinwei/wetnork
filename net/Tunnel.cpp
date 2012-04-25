@@ -8,14 +8,14 @@
 
 using namespace std;
 
-Tunnel::Tunnel(ev::loop_ref& loop, Link* link)
-	: link(link), loop(loop)
+Tunnel::Tunnel(ev::loop_ref& loop, CryptoSession&& link)
+	: link(move(link)), loop(loop)
 {
 }
 
 Tunnel::~Tunnel()
 {
-	link->close();
+	link.close();
 }
 
 Tunnel::Channel& Tunnel::getChannel(int8_t id, bool reliable)
@@ -27,9 +27,9 @@ Tunnel::Channel& Tunnel::getChannel(int8_t id, bool reliable)
 	uint8_t cid = (reliable ? 0x80 : 0) | id;
 	if (!channels.count(cid)) {
 		if (reliable) {
-			channels[cid] = more::make_unique<ReliableChannel>(*link, cid, loop);
+			channels[cid] = more::make_unique<ReliableChannel>(link, cid, loop);
 		} else {
-			channels[cid] = more::make_unique<UnreliableChannel>(*link, cid);
+			channels[cid] = more::make_unique<UnreliableChannel>(link, cid);
 		}
 	}
 	return *channels.at(cid);

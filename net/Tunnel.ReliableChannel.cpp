@@ -45,8 +45,8 @@ struct ReliablePacketHeader {
 		}
 };
 
-Tunnel::ReliableChannel::ReliableChannel(Link& link, uint8_t cid, ev::loop_ref& loop)
-	: Channel(link, cid), timeout(loop), inFlightPacket(), localSeq(0), peerSeq(0)
+Tunnel::ReliableChannel::ReliableChannel(Stream& next, uint8_t cid, ev::loop_ref& loop)
+	: Channel(next, cid), timeout(loop), inFlightPacket(), localSeq(0), peerSeq(0)
 {
 	timeout.set<ReliableChannel, &ReliableChannel::onTimeout>(this);
 }
@@ -69,7 +69,7 @@ void Tunnel::ReliableChannel::transmitPacket(const Packet& packet)
 {
 	ReliablePacketHeader header(cid, 0, localSeq);
 
-	link.write(header, packet);
+	next.write(header, packet);
 }
 
 ssize_t Tunnel::ReliableChannel::writePacket(const Packet& packet)
@@ -101,7 +101,7 @@ void Tunnel::ReliableChannel::readPacket(const Packet& packet)
 			receive(*this, packet.skip(ReliablePacketHeader::size));
 		}
 
-		link.write(ackHeader);
+		next.write(ackHeader);
 	}
 }
 

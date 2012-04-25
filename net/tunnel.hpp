@@ -8,6 +8,7 @@
 #include <signal.hpp>
 
 #include "network.hpp"
+#include "crypto.hpp"
 
 class Tunnel {
 	private:
@@ -18,7 +19,7 @@ class Tunnel {
 		typedef std::map<uint8_t, std::unique_ptr<Channel>> channel_map;
 
 		channel_map channels;
-		std::unique_ptr<Link> link;
+		CryptoSession link;
 		ev::loop_ref& loop;
 
 		Channel& getChannel(int8_t id, bool reliable);
@@ -28,7 +29,7 @@ class Tunnel {
 		Tunnel(const Tunnel&) = delete;
 		Tunnel& operator=(const Tunnel&) = delete;
 
-		Tunnel(ev::loop_ref& loop, Link* link);
+		Tunnel(ev::loop_ref& loop, CryptoSession&& link);
 
 		virtual ~Tunnel();
 };

@@ -18,10 +18,10 @@ class Tunnel::Channel {
 		OnReceive receive;
 		OnCanSend canSend;
 
-		Link& link;
+		Stream& next;
 		uint8_t cid;
 
-		Channel(Link& link, uint8_t cid);
+		Channel(Stream& next, uint8_t cid);
 
 	public:
 		Channel(const Channel&) = delete;
@@ -41,7 +41,7 @@ class Tunnel::UnreliableChannel : public Channel {
 		UnreliableChannel(const UnreliableChannel&) = delete;
 		UnreliableChannel& operator=(const UnreliableChannel&) = delete;
 		
-		UnreliableChannel(Link& link, uint8_t cid);
+		UnreliableChannel(Stream& next, uint8_t cid);
 
 		void readPacket(const Packet& packet) override;
 		ssize_t writePacket(const Packet& packet) override;
@@ -62,7 +62,7 @@ class Tunnel::ReliableChannel : public Channel {
 		ReliableChannel(const ReliableChannel&) = delete;
 		ReliableChannel& operator=(const ReliableChannel&) = delete;
 		
-		ReliableChannel(Link& link, uint8_t cid, ev::loop_ref& loop);
+		ReliableChannel(Stream& next, uint8_t cid, ev::loop_ref& loop);
 
 		void readPacket(const Packet& packet) override;
 		ssize_t writePacket(const Packet& packet) override;
