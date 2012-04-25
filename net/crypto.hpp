@@ -46,7 +46,7 @@ class CryptoContext {
 		const std::set<KeyFingerprint>& permissiblePeers() const;
 		void permissiblePeers(const std::set<KeyFingerprint>& peers);
 
-		CryptoSession* openSession(Stream& next, bool server);
+		CryptoSession openSession(Stream& next, bool server);
 };
 
 
@@ -115,6 +115,9 @@ class CryptoSession : public Stream {
 	public:
 		CryptoSession(const CryptoSession&) = delete;
 		CryptoSession& operator=(const CryptoSession&) = delete;
+
+		CryptoSession(CryptoSession&&) = default;
+		CryptoSession& operator=(CryptoSession&&) = default;
 
 		~CryptoSession();
 

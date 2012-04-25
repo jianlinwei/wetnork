@@ -82,6 +82,9 @@ class Stream {
 		Stream(const Stream&) = delete;
 		Stream& operator=(const Stream&) = delete;
 
+		Stream(Stream&&) = default;
+		Stream& operator=(Stream&&) = default;
+
 		virtual ~Stream();
 
 		virtual bool write(const Packet& packet) = 0;
