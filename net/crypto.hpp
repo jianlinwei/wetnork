@@ -82,7 +82,7 @@ class CryptoSession : public Stream {
 		//	* reject connections with cert changes
 		CryptoContext& context;
 		Stream& next;
-		bs2::scoped_connection nextOnRead;
+		ms::scoped_connection nextOnRead;
 
 		OnStateChanged stateChanged;
 		State _state;
@@ -120,7 +120,7 @@ class CryptoSession : public Stream {
 
 		State state() const;
 
-		bs2::connection connectStateChanged(OnStateChanged::slot_function_type fn);
+		ms::connection connectStateChanged(OnStateChanged::slot_function_type fn);
 
 		bool write(const Packet& packet) override;
 

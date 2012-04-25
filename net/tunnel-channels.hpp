@@ -33,8 +33,8 @@ class Tunnel::Channel {
 		virtual void readPacket(const Packet& packet) = 0;
 		virtual ssize_t writePacket(const Packet& packet) = 0;
 
-		virtual bs2::connection connectReceive(OnReceive::slot_function_type cb);
-		virtual bs2::connection connectCanSend(OnCanSend::slot_function_type cb);
+		virtual ms::connection connectReceive(OnReceive::slot_function_type cb);
+		virtual ms::connection connectCanSend(OnCanSend::slot_function_type cb);
 };	
 
 class Tunnel::UnreliableChannel : public Channel {

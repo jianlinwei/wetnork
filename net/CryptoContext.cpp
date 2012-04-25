@@ -1,5 +1,6 @@
 #include <stdexcept>
 #include <string.h>
+#include <limits>
 
 #include <exception.hpp>
 
@@ -9,10 +10,10 @@ using namespace std;
 
 CryptoContext::CryptoContext(const string& pubKey, const string& privKey, const std::string& subkey)
 {
-	if (pubKey.size() >= UINT_MAX) {
+	if (pubKey.size() >= numeric_limits<int>::max()) {
 		throw invalid_argument("pubKey");
 	}
-	if (privKey.size() >= UINT_MAX) {
+	if (privKey.size() >= numeric_limits<int>::max()) {
 		throw invalid_argument("privKey");
 	}
 

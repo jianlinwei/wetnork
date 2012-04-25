@@ -1,14 +1,11 @@
 #ifndef SIGNAL_H
 #define SIGNAL_H
 
-#include <boost/signals2.hpp>
+#include <more/signals.hpp>
 
-namespace bs2 = boost::signals2;
+namespace ms = more::signals;
 
 template<typename Signature>
-using Signal = typename boost::signals2::signal_type<
-	Signature,
-	boost::signals2::keywords::mutex_type<boost::signals2::dummy_mutex>
-	>::type;
+using Signal = more::signals::signal<Signature>;
 
 #endif

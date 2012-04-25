@@ -4,7 +4,6 @@
 #include <sys/socket.h>
 #include <ev++.h>
 #include <netinet/in.h>
-#include <boost/signals2.hpp>
 #include <boost/ptr_container/ptr_map.hpp>
 #include <cstdint>
 #include <string>
@@ -36,7 +35,7 @@ class UdpLink : public Link {
 
 		~UdpLink() override;
 
-		bs2::connection connectStateChanged(OnStateChanged::slot_function_type cb) override;
+		ms::connection connectStateChanged(OnStateChanged::slot_function_type cb) override;
 
 		bool write(const Packet& packet) override;
 

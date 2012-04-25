@@ -1,0 +1,3 @@
+[submodule "include/more"]
+	path = include/more
+	url = git@github.com:myeisha/libmore.git

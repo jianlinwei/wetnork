@@ -11,7 +11,7 @@ void Link::setState(State state)
 	stateChanged(*this, oldState);
 }
 
-bs2::connection Link::connectStateChanged(OnStateChanged::slot_function_type cb)
+ms::connection Link::connectStateChanged(OnStateChanged::slot_function_type cb)
 {
 	return stateChanged.connect(cb);
 }

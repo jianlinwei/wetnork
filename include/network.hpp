@@ -6,6 +6,7 @@
 #include <string>
 #include <memory>
 #include <array>
+#include <cstring>
 
 #include <signal.hpp>
 
@@ -97,7 +98,7 @@ class Stream {
 			std::unique_ptr<uint8_t[]> buffer(new uint8_t[size]);
 			size_t offset = 0;
 			for (auto it = begin; it != end; ++it) {
-				memcpy(buffer.get() + offset, it->data(), it->length());
+				std::memcpy(buffer.get() + offset, it->data(), it->length());
 				offset += it->length();
 			}
 
@@ -113,7 +114,7 @@ class Stream {
 			return write(packets.begin(), packets.end());
 		}
 
-		virtual bs2::connection connectRead(OnRead::slot_function_type fn);
+		virtual ms::connection connectRead(OnRead::slot_function_type fn);
 };
 
 #endif

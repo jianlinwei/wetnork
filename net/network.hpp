@@ -52,7 +52,7 @@ class Link : public Stream {
 
 		virtual State state() const;
 
-		virtual bs2::connection connectStateChanged(OnStateChanged::slot_function_type cb);
+		virtual ms::connection connectStateChanged(OnStateChanged::slot_function_type cb);
 
 		virtual void close() = 0;
 };
@@ -73,7 +73,7 @@ class Socket {
 
 		virtual const SocketAddress& address() const = 0;
 
-		virtual bs2::connection listen(OnAccept::slot_function_type cb);
+		virtual ms::connection listen(OnAccept::slot_function_type cb);
 };
 
 #endif

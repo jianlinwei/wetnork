@@ -35,7 +35,7 @@ CryptoSession::~CryptoSession()
 
 
 
-bs2::connection CryptoSession::connectStateChanged(OnStateChanged::slot_function_type fn)
+ms::connection CryptoSession::connectStateChanged(OnStateChanged::slot_function_type fn)
 {
 	return stateChanged.connect(fn);
 }
