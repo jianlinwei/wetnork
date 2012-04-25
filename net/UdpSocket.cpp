@@ -4,6 +4,7 @@
 #include <cerrno>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <unistd.h>
 
 #include "network.hpp"
 #include "network-udp.hpp"
@@ -25,7 +26,7 @@ UdpSocket::~UdpSocket()
 {
 	watcher.stop();
 
-	peers_map localPeers(peers.release());
+	peers_map localPeers(std::move(peers));
 	localPeers.clear();
 }
 
@@ -62,7 +63,7 @@ void UdpSocket::onPacketArrived(ev::io& io, int revents)
 			// TODO: accept connections
 		}
 	} else {
-		UdpLink& link = peers.at(s_addr);
+		UdpLink& link = *peers.at(s_addr);
 
 		link.propagate(Packet(packetBuffer.release(), 0, plen));
 	}
@@ -103,9 +104,9 @@ UdpLink& UdpSocket::connect(const SocketAddress& peer)
 
 	close(fd);
 
-	peers.insert(peer, new UdpLink(*this, fd, peer));
+	peers[peer] = std::unique_ptr<UdpLink>(new UdpLink(*this, fd, peer));
 	
-	return peers.at(peer);
+	return *peers.at(peer);
 	
 	// TODO: connect handling
 }

@@ -1,9 +1,9 @@
 #ifndef NET_TUNNEL_H
 #define NET_TUNNEL_H
 
-#include <boost/ptr_container/ptr_map.hpp>
 #include <ev++.h>
 #include <memory>
+#include <map>
 
 #include <signal.hpp>
 
@@ -15,7 +15,7 @@ class Tunnel {
 		class UnreliableChannel;
 		class ReliableChannel;
 
-		typedef boost::ptr_map<uint8_t, Channel> channel_map;
+		typedef std::map<uint8_t, std::unique_ptr<Channel>> channel_map;
 
 		channel_map channels;
 		std::unique_ptr<Link> link;

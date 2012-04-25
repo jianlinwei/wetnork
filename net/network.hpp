@@ -8,8 +8,6 @@
 #include <cstdint>
 #include <string>
 #include <arpa/inet.h>
-#include <boost/shared_array.hpp>
-#include <boost/utility.hpp>
 #include <array>
 #include <tuple>
 

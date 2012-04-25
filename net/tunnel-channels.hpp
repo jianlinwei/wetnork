@@ -3,7 +3,6 @@
 
 #include <memory>
 #include <ev++.h>
-#include <boost/utility.hpp>
 
 #include <signal.hpp>
 #include <network.hpp>

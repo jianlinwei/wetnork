@@ -4,12 +4,11 @@
 #include <sys/socket.h>
 #include <ev++.h>
 #include <netinet/in.h>
-#include <boost/ptr_container/ptr_map.hpp>
 #include <cstdint>
 #include <string>
 #include <arpa/inet.h>
-#include <boost/shared_array.hpp>
-#include <boost/function.hpp>
+#include <map>
+#include <memory>
 
 #include "network.hpp"
 
@@ -45,7 +44,7 @@ class UdpLink : public Link {
 class UdpSocket : public Socket {
 	friend class UdpLink;
 	private:
-		typedef boost::ptr_map<const SocketAddress, UdpLink> peers_map;
+		typedef std::map<SocketAddress, std::unique_ptr<UdpLink>> peers_map;
 
 		int fd;
 		ev::io watcher;

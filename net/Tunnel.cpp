@@ -1,4 +1,5 @@
 #include <stdexcept>
+#include <more/make_unique.hpp>
 
 #include <exception.hpp>
 
@@ -26,12 +27,12 @@ Tunnel::Channel& Tunnel::getChannel(int8_t id, bool reliable)
 	uint8_t cid = (reliable ? 0x80 : 0) | id;
 	if (!channels.count(cid)) {
 		if (reliable) {
-			channels.insert(cid, new ReliableChannel(*link, cid, loop));
+			channels[cid] = more::make_unique<ReliableChannel>(*link, cid, loop);
 		} else {
-			channels.insert(cid, new UnreliableChannel(*link, cid));
+			channels[cid] = more::make_unique<UnreliableChannel>(*link, cid);
 		}
 	}
-	return channels.at(cid);
+	return *channels.at(cid);
 }
 
 void Tunnel::propagate(const Packet& packet)
