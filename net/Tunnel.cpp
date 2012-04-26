@@ -1,5 +1,6 @@
 #include <stdexcept>
 #include <more/make_unique.hpp>
+#include <more/bind_this.hpp>
 
 #include <exception.hpp>
 
@@ -8,9 +9,12 @@
 
 using namespace std;
 
-Tunnel::Tunnel(ev::loop_ref& loop, CryptoSession&& link)
-	: link(move(link)), loop(loop)
+Tunnel::Tunnel(ev::loop_ref& loop, CryptoSession&& link, std::unique_ptr<TunDevice>&& tun)
+	: link(move(link)), loop(loop), tun(move(tun)),
+		dataChannel(new UnreliableChannel(this->link, DataChannelId))
 {
+	tun->connectRead(more::bind_this(&Tunnel::tunRead, this));
+	dataChannel->connectReceive(more::bind_this(&Tunnel::dataRead, this));
 }
 
 Tunnel::~Tunnel()
@@ -18,21 +22,16 @@ Tunnel::~Tunnel()
 	link.close();
 }
 
-Tunnel::Channel& Tunnel::getChannel(int8_t id, bool reliable)
+Tunnel::Channel& Tunnel::getChannel(uint8_t id, bool reliable)
 {
-	if (id < 0) {
-		throw invalid_argument("id");
-	}
-
-	uint8_t cid = (reliable ? 0x80 : 0) | id;
-	if (!channels.count(cid)) {
-		if (reliable) {
-			channels[cid] = more::make_unique<ReliableChannel>(link, cid, loop);
-		} else {
-			channels[cid] = more::make_unique<UnreliableChannel>(link, cid);
+	if (reliable) {
+	} else {
+		switch (id) {
+			case 0:
+				return *dataChannel;
 		}
 	}
-	return *channels.at(cid);
+	throw invalid_argument("id");
 }
 
 void Tunnel::propagate(const Packet& packet)
@@ -45,4 +44,14 @@ void Tunnel::propagate(const Packet& packet)
 	bool reliableChannel = !!(channel & 0x80);
 
 	getChannel(channel & ~0x80, reliableChannel).readPacket(packet.skip(1));
+}
+
+void Tunnel::tunRead(Stream& sender, const Packet& packet)
+{
+	dataChannel->writePacket(packet);
+}
+
+void Tunnel::dataRead(Channel& sender, const Packet& packet)
+{
+	tun->write(packet);
 }

@@ -9,6 +9,7 @@
 
 #include "network.hpp"
 #include "crypto.hpp"
+#include "tun.hpp"
 
 class Tunnel {
 	private:
@@ -16,20 +17,25 @@ class Tunnel {
 		class UnreliableChannel;
 		class ReliableChannel;
 
-		typedef std::map<uint8_t, std::unique_ptr<Channel>> channel_map;
-
-		channel_map channels;
 		CryptoSession link;
 		ev::loop_ref& loop;
 
-		Channel& getChannel(int8_t id, bool reliable);
+		std::unique_ptr<TunDevice> tun;
+
+		static constexpr int DataChannelId = 0;
+		std::unique_ptr<UnreliableChannel> dataChannel;
+
+		Channel& getChannel(uint8_t id, bool reliable);
 		void propagate(const Packet& packet);
+
+		void tunRead(Stream& sender, const Packet& packet);
+		void dataRead(Channel& sender, const Packet& packet);
 
 	public:
 		Tunnel(const Tunnel&) = delete;
 		Tunnel& operator=(const Tunnel&) = delete;
 
-		Tunnel(ev::loop_ref& loop, CryptoSession&& link);
+		Tunnel(ev::loop_ref& loop, CryptoSession&& link, std::unique_ptr<TunDevice>&& tun);
 
 		virtual ~Tunnel();
 };
