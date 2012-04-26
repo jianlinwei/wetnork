@@ -8,12 +8,12 @@
 #include <ev.h>
 
 //#include "net/tun.hpp"
-#include "host/tun.hpp"
+#include "host/TunRegistry.hpp"
 
 using namespace std;
 
 //TunDevice *tun1, *tun2;
-TunRegistry reg;
+//TunRegistry reg;
 
 //void io_cb(TunDevice& sender, const Packet& packet)
 //{
@@ -24,6 +24,19 @@ TunRegistry reg;
 
 int main(int argc, char **argv)
 {
+	std::string s = "/dev/net/tun";
+	host::TunRegistry tr(s);
+
+	{
+		auto& td = tr.createDevice("");
+		fprintf(stdout, "%s %i %i\n", td.name().c_str(), td.fd(), td.ifIndex());
+	}
+	{
+		auto& td = tr.createDevice("");
+		fprintf(stdout, "%s %i %i\n", td.name().c_str(), td.fd(), td.ifIndex());
+	}
+
+	getchar();
 //	if (!ev_default_loop(0)) {
 //		printf("No default loop!\n");
 //		return 1;

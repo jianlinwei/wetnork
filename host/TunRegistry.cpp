@@ -2,63 +2,55 @@
 #include <cerrno>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <linux/if.h>
+#include <net/if.h>
 #include <linux/if_tun.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <stdexcept>
 #include <unistd.h>
+#include <more/make_unique.hpp>
 
-#include "tun.hpp"
+#include "TunRegistry.hpp"
 
-using namespace std;
+using namespace host;
 
-TunRegistry::~TunRegistry()
-{
-	for (auto& it : devices) {
-		close(it.second);
-	}
-}
-
-int TunRegistry::findDevice(const string& name) const
-{
-	if (!devices.count(name)) {
-		return -1;
-	}
-	return devices.at(name);
-}
-
-string TunRegistry::createDevice(const string& nameTemplate)
+TunDevice& TunRegistry::createDevice(const std::string& nameTemplate)
 {
 	struct ifreq ifr;
-	int fd;
-	int err;
-	string result;
 
-	fd = open("/dev/net/tun", O_RDWR);
+	int fd = open(tunCtl_.c_str(), O_RDWR);
 	if (fd < 0) {
-		throw FileNotFound("Could not open /dev/net/tun");
+		throw FileNotFound("Could not open " + tunCtl_);
 	}
 
 	memset(&ifr, 0, sizeof(ifr));
 	ifr.ifr_flags = IFF_TUN | IFF_NO_PI;
-	if (nameTemplate.size()) {
-		strncpy(ifr.ifr_name, nameTemplate.c_str(), IFNAMSIZ);
-	}
+	std::strncpy(ifr.ifr_name, nameTemplate.c_str(), IFNAMSIZ);
 
-	err = ioctl(fd, TUNSETIFF, reinterpret_cast<void*>(&ifr));
+	int err = ioctl(fd, TUNSETIFF, reinterpret_cast<void*>(&ifr));
 	if (err < 0) {
 		close(fd);
-		throw InvalidOperation(string("Could not ioctl() tun: ") + strerror(errno));
+		throw InvalidOperation(std::string("Could not ioctl() tun: ") + strerror(errno));
 	}
 
-	result = ifr.ifr_name;
-	devices[result] = fd;
-	return result;
+	std::string ifName = ifr.ifr_name;
+	uint32_t ifIndex = if_nametoindex(ifr.ifr_name);
+
+	devices[ifName] = more::make_unique<TunDevice>(fd, ifIndex, ifName);
+	return *devices[ifName];
 }
 
-void TunRegistry::closeDevice(const string& name)
+TunDevice* TunRegistry::findDevice(const std::string& name) const
 {
-	close(findDevice(name));
-	devices.erase(name);
+	auto pos = devices.find(name);
+	if (pos == devices.end()) {
+		return nullptr;
+	} else {
+		return pos->second.get();
+	}
+}
+
+bool TunRegistry::closeDevice(const std::string& name)
+{
+	return devices.erase(name);
 }
