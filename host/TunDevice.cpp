@@ -1,13 +1,11 @@
 #include <host/TunDevice.hpp>
 
+#include <cstring>
 #include <unistd.h>
 
-using namespace host;
+#include <exception.hpp>
 
-TunDevice::TunDevice(int fd, int ifIndex, const std::string& name)
-	: fd_(fd), ifIndex_(ifIndex), name_(name)
-{
-}
+using namespace host;
 
 TunDevice::TunDevice(TunDevice&& other)
 	: fd_(other.fd_), ifIndex_(other.ifIndex_), name_(std::move(other.name_))
@@ -34,24 +32,19 @@ TunDevice::~TunDevice()
 	close();
 }
 
+TunDevice TunDevice::dup() const
+{
+	int fd = ::dup(fd_);
+	if (fd < 0) {
+		throw InvalidOperation(std::string("Could not duplicate file descriptor: ") + std::strerror(errno));
+	}
+
+	return TunDevice(fd, ifIndex_, name_);
+}
+
 void TunDevice::close()
 {
 	if (fd_ >= 0) {
 		::close(fd_);
 	}
-}
-
-int TunDevice::fd() const
-{
-	return fd_;
-}
-
-int TunDevice::ifIndex() const
-{
-	return ifIndex_;
-}
-
-const std::string& TunDevice::name() const
-{
-	return name_;
 }

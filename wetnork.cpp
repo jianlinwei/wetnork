@@ -28,11 +28,11 @@ int main(int argc, char **argv)
 	host::TunRegistry tr(s);
 
 	{
-		auto& td = tr.createDevice("");
+		auto& td = tr.createDevice("tun%d-%%d");
 		fprintf(stdout, "%s %i %i\n", td.name().c_str(), td.fd(), td.ifIndex());
 	}
 	{
-		auto& td = tr.createDevice("");
+		auto& td = tr.createDevice("tun%d-%%d");
 		fprintf(stdout, "%s %i %i\n", td.name().c_str(), td.fd(), td.ifIndex());
 	}
 

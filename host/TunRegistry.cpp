@@ -14,7 +14,7 @@
 
 using namespace host;
 
-TunDevice& TunRegistry::createDevice(const std::string& nameTemplate)
+const TunDevice& TunRegistry::createDevice(const std::string& nameTemplate)
 {
 	struct ifreq ifr;
 
@@ -36,11 +36,11 @@ TunDevice& TunRegistry::createDevice(const std::string& nameTemplate)
 	std::string ifName = ifr.ifr_name;
 	uint32_t ifIndex = if_nametoindex(ifr.ifr_name);
 
-	devices[ifName] = more::make_unique<TunDevice>(fd, ifIndex, ifName);
+	devices[ifName] = std::unique_ptr<TunDevice>(new TunDevice(fd, ifIndex, ifName));
 	return *devices[ifName];
 }
 
-TunDevice* TunRegistry::findDevice(const std::string& name) const
+const TunDevice* TunRegistry::findDevice(const std::string& name) const
 {
 	auto pos = devices.find(name);
 	if (pos == devices.end()) {
