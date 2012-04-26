@@ -130,7 +130,10 @@ $(PARTICLE_MAKEFILES): Makefile
 	@echo -e "[GEN]\t" $@
 	$(call generate_subdir_makefile,$@)
 
-.PHONY: clean distclean depclean $(DIRS) deps all
+html-doc:
+	$Vdoxygen doc/doxy.cfg
+
+.PHONY: clean distclean depclean $(DIRS) deps all html-doc
 
 
 # result: shell command to create a dependency file

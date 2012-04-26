@@ -4,3 +4,4 @@ obj
 bin
 dir.mk
 .clang_complete
+doc/*
