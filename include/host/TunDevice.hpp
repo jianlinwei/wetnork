@@ -58,7 +58,7 @@ namespace host {
 			/**
 			 * Creates a duplicate of the current instance with a unique file descriptor.
 			 *
-			 * \throws InvalidOperation The file descriptor could not be duplicated
+			 * \throws std::system_error The file descriptor could not be duplicated
 			 */
 			TunDevice dup() const;
 

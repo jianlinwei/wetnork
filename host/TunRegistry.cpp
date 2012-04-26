@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <unistd.h>
 #include <more/make_unique.hpp>
+#include <system_error>
 
 #include "TunRegistry.hpp"
 
@@ -20,7 +21,7 @@ const TunDevice& TunRegistry::createDevice(const std::string& nameTemplate)
 
 	int fd = open(tunCtl_.c_str(), O_RDWR);
 	if (fd < 0) {
-		throw FileNotFound("Could not open " + tunCtl_);
+		throw std::system_error(std::error_code(errno, std::system_category()));
 	}
 
 	memset(&ifr, 0, sizeof(ifr));
@@ -30,7 +31,7 @@ const TunDevice& TunRegistry::createDevice(const std::string& nameTemplate)
 	int err = ioctl(fd, TUNSETIFF, reinterpret_cast<void*>(&ifr));
 	if (err < 0) {
 		close(fd);
-		throw InvalidOperation(std::string("Could not ioctl() tun: ") + strerror(errno));
+		throw std::system_error(std::error_code(errno, std::system_category()));
 	}
 
 	std::string ifName = ifr.ifr_name;

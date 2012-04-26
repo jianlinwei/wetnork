@@ -2,6 +2,7 @@
 
 #include <cstring>
 #include <unistd.h>
+#include <system_error>
 
 #include <exception.hpp>
 
@@ -36,7 +37,7 @@ TunDevice TunDevice::dup() const
 {
 	int fd = ::dup(fd_);
 	if (fd < 0) {
-		throw InvalidOperation(std::string("Could not duplicate file descriptor: ") + std::strerror(errno));
+		throw std::system_error(std::error_code(errno, std::system_category()));
 	}
 
 	return TunDevice(fd, ifIndex_, name_);

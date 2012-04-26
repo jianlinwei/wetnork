@@ -45,8 +45,8 @@ namespace host {
 			 * will be replaced by a number. If \a nameTemplate does not contain \c %d,
 			 * the name for the device will be taken as given.
 			 *
-			 * \throws FileNotFound \c tunCtl could not be opened
-			 * \throws InvalidOperation The name of the device could not be set
+			 * \throws std::system_error \c tunCtl could not be opened, or the name of
+			 * the device could not be set
 			 *
 			 * \post
 			 * \code
