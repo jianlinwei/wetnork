@@ -5,9 +5,16 @@ PARTICLES := net host common
 # default compiler/linker flags
 CPPFLAGS += -std=c++11 -DEV_COMPAT3=0 -I include
 
-CXXFLAGS += -std=c++11 -fPIC -Wall -Wnon-virtual-dtor -pedantic -O2
+CXXFLAGS += -std=c++11 -fPIE -Wall -Wnon-virtual-dtor -pedantic
 
 LDFLAGS += -pie
+
+ifdef RELEASE
+	CXXFLAGS += -O2
+else
+	CXXFLAGS += -g
+	LDFLAGS += -g
+endif
 
 # default values for internal variables
 CXX := clang++
