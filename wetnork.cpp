@@ -9,6 +9,7 @@
 
 //#include "net/tun.hpp"
 #include "host/TunRegistry.hpp"
+#include "host/TunAdminContext.hpp"
 
 using namespace std;
 
@@ -26,15 +27,17 @@ int main(int argc, char **argv)
 {
 	std::string s = "/dev/net/tun";
 	host::TunRegistry tr(s);
+	host::TunAdminContext ta;
 
-	{
-		auto& td = tr.createDevice("tun%d-%%d");
-		fprintf(stdout, "%s %i %i\n", td.name().c_str(), td.fd(), td.ifIndex());
-	}
-	{
-		auto& td = tr.createDevice("tun%d-%%d");
-		fprintf(stdout, "%s %i %i\n", td.name().c_str(), td.fd(), td.ifIndex());
-	}
+	auto& td = tr.createDevice("tun%d");
+	fprintf(stdout, "%s %i %i\n", td.name().c_str(), td.fd(), td.ifIndex());
+	auto& te = tr.createDevice("tun%d");
+	fprintf(stdout, "%s %i %i\n", te.name().c_str(), te.fd(), te.ifIndex());
+
+	ta.setLinkState(td, true);
+	ta.setLinkState(te, true);
+	ta.setLinkState(td, false);
+	ta.setLinkMtu(te, 256);
 
 	getchar();
 //	if (!ev_default_loop(0)) {
