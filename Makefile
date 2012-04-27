@@ -29,12 +29,14 @@ ifndef BINDIR
 endif
 
 # external libraries used
-LIBRARIES := gnutls
+LIBRARIES := gnutls libnl-3.0 libnl-route-3.0
 LIBRARIES_WITHOUT_PKGCONFIG := ev
 
 # library version requirements
 define LIBRARY_VERSION_CHECK =
 	if ! pkg-config --atleast-version=3.0.15 gnutls; then echo "gnutls version 3.0.15 or newer required"; exit 1; fi
+	if ! pkg-config --atleast-version=3.2.7 libnl-3.0; then echo "libnl version 3.2.7 or newer required"; exit 1; fi
+	if ! pkg-config --atleast-version=3.2.7 libnl-route-3.0; then echo "libnl-route version 3.2.7 or newer required"; exit 1; fi
 endef
 
 

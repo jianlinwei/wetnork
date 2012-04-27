@@ -5,3 +5,4 @@ bin
 dir.mk
 .clang_complete
 doc/*
+core
