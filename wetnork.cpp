@@ -10,6 +10,7 @@
 //#include "net/tun.hpp"
 #include "host/TunRegistry.hpp"
 #include "host/TunAdminContext.hpp"
+#include <IPAddress.hpp>
 
 using namespace std;
 
@@ -28,6 +29,11 @@ int main(int argc, char **argv)
 	std::string s = "/dev/net/tun";
 	host::TunRegistry tr(s);
 	host::TunAdminContext ta;
+
+	IPAddress a = IPAddress::parse("127.0.0.1");
+	IPAddress b = IPAddress::parse("127.0.0.1");
+
+	return a >= b;
 
 	auto& td = tr.createDevice("tun%d");
 	fprintf(stdout, "%s %i %i\n", td.name().c_str(), td.fd(), td.ifIndex());

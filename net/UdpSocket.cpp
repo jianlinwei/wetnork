@@ -71,7 +71,7 @@ void UdpSocket::onPacketArrived(ev::io& io, int revents)
 
 UdpSocket* UdpSocket::create(const SocketAddress& addr, ev::loop_ref& loop)
 {
-	int fd = socket(addr.family(), SOCK_DGRAM, IPPROTO_UDP);
+	int fd = socket(addr.native_family(), SOCK_DGRAM, IPPROTO_UDP);
 
 	if (fd < 0) {
 		throw SocketException(errno, string("Could not open socket: ") + strerror(errno));
@@ -92,7 +92,7 @@ UdpLink& UdpSocket::connect(const SocketAddress& peer)
 		throw invalid_argument("peer");
 	}
 
-	int fd = ::socket(peer.family(), SOCK_DGRAM, IPPROTO_UDP);
+	int fd = ::socket(peer.native_family(), SOCK_DGRAM, IPPROTO_UDP);
 	if (fd < 0) {
 		throw SocketException(errno, string("Could not open socket: ") + strerror(errno));
 	}

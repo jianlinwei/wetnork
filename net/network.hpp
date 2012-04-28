@@ -13,6 +13,7 @@
 
 #include <exception.hpp>
 #include <network.hpp>
+#include <SocketAddress.hpp>
 #include <signal.hpp>
 #include <crypto.hpp>
 

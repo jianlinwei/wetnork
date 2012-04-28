@@ -11,34 +11,17 @@
 
 using namespace std;
 
-int SocketAddress::family() const
-{
-	return addr.in.sin_family;
-}
-
-const sockaddr* SocketAddress::native() const
-{
-	return reinterpret_cast<const sockaddr*>(&addr);
-}
-
-socklen_t SocketAddress::native_len() const
-{
-	return len;
-}
-
 SocketAddress::SocketAddress(const sockaddr* addr)
 {
-	memset(&this->addr, 0, sizeof(this->addr));
+	memset(&this->addr_, 0, sizeof(this->addr_));
 
 	switch (addr->sa_family) {
 		case AF_INET:
-			len = sizeof(sockaddr_in);
-			this->addr.in = *reinterpret_cast<const sockaddr_in*>(addr);
+			this->addr_.in = *reinterpret_cast<const sockaddr_in*>(addr);
 			break;
 
 		case AF_INET6:
-			len = sizeof(sockaddr_in6);
-			this->addr.in6 = *reinterpret_cast<const sockaddr_in6*>(addr);
+			this->addr_.in6 = *reinterpret_cast<const sockaddr_in6*>(addr);
 			break;
 
 		default:
@@ -46,37 +29,19 @@ SocketAddress::SocketAddress(const sockaddr* addr)
 	}
 }
 
-SocketAddress SocketAddress::parse(const std::string& s, in_port_t port)
+SocketAddress::SocketAddress(IPAddress&& addr, in_port_t port)
 {
-	if (s.find(':') != std::string::npos) {
-		sockaddr_in6 addr;
-		memset(&addr, 0, sizeof(addr));
-		if (inet_pton(AF_INET6, s.c_str(), &addr.sin6_addr) < 0) {
-			throw invalid_argument(string("Cannot parse IP address: ") + strerror(errno));
-		}
-		addr.sin6_port = htons(port);
-		return SocketAddress(reinterpret_cast<sockaddr*>(&addr));
-	} else {
-		sockaddr_in addr;
-		memset(&addr, 0, sizeof(addr));
-		if (inet_pton(AF_INET, s.c_str(), &addr.sin_addr) < 0) {
-			throw invalid_argument(string("Cannot parse IP address: ") + strerror(errno));
-		}
-		addr.sin_port = htons(port);
-		return SocketAddress(reinterpret_cast<sockaddr*>(&addr));
+	memset(&addr_, 0, sizeof(addr_));
+
+	addr_.in.sin_family = addr.native_family();
+	addr_.in.sin_port = htons(port);
+	switch (addr.family()) {
+		case AddressFamily::IPv4:
+			addr_.in.sin_addr = addr.in();
+			break;
+
+		case AddressFamily::IPv6:
+			addr_.in6.sin6_addr = addr.in6();
+			break;
 	}
 }
-
-bool SocketAddress::operator<(const SocketAddress& other) const
-{
-	return len < other.len
-		? -1
-		: memcmp(&addr, &other.addr, len);
-}
-
-bool SocketAddress::operator==(const SocketAddress& other) const
-{
-	return len == other.len
-		&& memcmp(&addr, &other.addr, len) == 0;
-}
-
