@@ -1,4 +1,4 @@
-#include "network.hpp"
+#include <Packet.hpp>
 
 Packet::Packet(const std::shared_ptr<const uint8_t>& data, ptrdiff_t offset, size_t length)
 	: _data(data), _offset(offset), _length(length)

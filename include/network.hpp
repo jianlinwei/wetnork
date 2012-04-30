@@ -11,34 +11,7 @@
 #include <signal.hpp>
 #include <IPAddress.hpp>
 #include <SocketAddress.hpp>
-
-class Packet {
-	private:
-		static void NullDelete(const uint8_t*);
-		static void ArrayDelete(const uint8_t*);
-
-		std::shared_ptr<const uint8_t> _data;
-		ptrdiff_t _offset;
-		size_t _length;
-
-		Packet(const std::shared_ptr<const uint8_t>& data, ptrdiff_t offset, size_t length);
-
-	public:
-		struct nocapture_t {};
-		static constexpr nocapture_t NoCapture = {};
-
-		Packet(const uint8_t* data, ptrdiff_t offset, size_t length);
-
-		Packet(const uint8_t* data, ptrdiff_t offset, size_t length, nocapture_t);
-
-		const uint8_t* data() const;
-
-		size_t length() const;
-
-		Packet skip(size_t bytes) const;
-};
-
-
+#include <Packet.hpp>
 
 class Stream {
 	public:
@@ -53,9 +26,6 @@ class Stream {
 		Stream() = default;
 
 	public:
-		Stream(const Stream&) = delete;
-		Stream& operator=(const Stream&) = delete;
-
 		Stream(Stream&&) = default;
 		Stream& operator=(Stream&&) = default;
 

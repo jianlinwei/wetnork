@@ -5,7 +5,7 @@ PARTICLES := net host common
 # default compiler/linker flags
 CPPFLAGS += -std=c++11 -DEV_COMPAT3=0 -I include
 
-CXXFLAGS += -std=c++11 -fPIE -Wall -Wnon-virtual-dtor -pedantic
+CXXFLAGS += -std=c++11 -fPIE -Wall -pedantic
 
 LDFLAGS += -pie
 
