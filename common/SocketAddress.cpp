@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include <arpa/inet.h>
 
-#include <network.hpp>
+#include <SocketAddress.hpp>
 
 using namespace std;
 

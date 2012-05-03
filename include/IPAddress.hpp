@@ -6,6 +6,8 @@
 #include <cstring>
 #include <boost/operators.hpp>
 
+#include <ipc/serialization.hpp>
+
 //! Enumeration of all valid and known address families
 enum class AddressFamily {
 	//! IPv4
@@ -14,6 +16,21 @@ enum class AddressFamily {
 	//! IPv6
 	IPv6 = AF_INET6
 };
+
+namespace ipc {
+	//! \copydoc is_serializable
+	template<>
+	struct is_serializable<in_addr> : std::true_type {
+	};
+
+	//! \copydoc is_serializable
+	template<>
+	struct is_serializable<in6_addr> : std::true_type {
+	};
+
+	class Serializer;
+	class Deserializer;
+}
 
 //! This class represents an IP address, v4 or v6.
 class IPAddress : boost::totally_ordered<IPAddress> {
@@ -128,6 +145,12 @@ class IPAddress : boost::totally_ordered<IPAddress> {
 			return lhs.family() == rhs.family()
 				&& std::memcmp(&lhs.in6(), &rhs.in6(), lhs.native_size()) == 0;
 		}
+
+		//! Serializes an address.
+		friend void serialize(const IPAddress& ip, ipc::Serializer& s);
+
+		//! Deserializes an address.
+		friend void deserialize(IPAddress* result, ipc::Deserializer& d);
 };
 
 #endif

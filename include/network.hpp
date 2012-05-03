@@ -9,8 +9,6 @@
 #include <cstring>
 
 #include <signal.hpp>
-#include <IPAddress.hpp>
-#include <SocketAddress.hpp>
 #include <Packet.hpp>
 
 class Stream {
