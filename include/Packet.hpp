@@ -71,12 +71,22 @@ class Packet {
 		}
 
 		/**
-		 * Creates a new packet instance starting at most \a bytes after \c data().
-		 * Calling this method is equivalent to creating a packet with the same \c data(),
-		 * but larger \c offset and smaller \c length. If \c bytes is larger than \c length(),
-		 * the resulting \c Packet will reference \c data(), but be 0 bytes long.
+		 * Creates a new packet instance starting at most \a bytes after \c
+		 * data().  Calling this method is equivalent to creating a packet with
+		 * the same \c data(), but larger \c offset and smaller \c length. If
+		 * \c bytes is larger than \c length(), the resulting Packet will
+		 * reference \c data(), but be 0 bytes long.
 		 */
 		Packet skip(size_t bytes) const;
+
+		/**
+		 * Creates a new packet instance starting at \c data(), with a length
+		 * of at most \a length.  Calling this method is equivalent to creating
+		 * a packet with the same \c data and \c offset, but a \c length no
+		 * larger than \a length. If \a length is larger than \c length(), the
+		 * resulting Packet will reference \c data(), but be 0 bytes long.
+		 */
+		Packet truncate(size_t length) const;
 };
 
 #endif
