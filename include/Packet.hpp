@@ -13,11 +13,14 @@ class Packet {
 		static void NullDelete(const uint8_t*);
 		static void ArrayDelete(const uint8_t*);
 
-		std::shared_ptr<const uint8_t> _data;
-		ptrdiff_t _offset;
-		size_t _length;
+		std::shared_ptr<const uint8_t> data_;
+		ptrdiff_t offset_;
+		size_t length_;
 
-		Packet(const std::shared_ptr<const uint8_t>& data, ptrdiff_t offset, size_t length);
+		Packet(const std::shared_ptr<const uint8_t>& data, ptrdiff_t offset, size_t length)
+			: data_(data), offset_(offset), length_(length)
+		{
+		}
 
 	public:
 		//! Tag type for noncapturing packet construction
@@ -35,7 +38,10 @@ class Packet {
 		 * length() == length
 		 * \endcode
 		 */
-		Packet(const uint8_t* data, ptrdiff_t offset, size_t length);
+		Packet(const uint8_t* data, ptrdiff_t offset, size_t length)
+			: data_(data, ArrayDelete), offset_(offset), length_(length)
+		{
+		}
 
 		/**
 		 * Constructs a new packet. The new instance does not take ownership of \a data. Thus,
@@ -47,13 +53,22 @@ class Packet {
 		 * length() == length
 		 * \endcode
 		 */
-		Packet(const uint8_t* data, ptrdiff_t offset, size_t length, nocapture_t);
+		Packet(const uint8_t* data, ptrdiff_t offset, size_t length, nocapture_t)
+			: data_(data, NullDelete), offset_(offset), length_(length)
+		{
+		}
 
 		//! The data block contained within the current instance.
-		const uint8_t* data() const;
+		const uint8_t* data() const
+		{
+			return data_.get() + offset_;
+		}
 
 		//! Length of the contained data block.
-		size_t length() const;
+		size_t length() const
+		{
+			return length_;
+		}
 
 		/**
 		 * Creates a new packet instance starting at most \a bytes after \c data().
